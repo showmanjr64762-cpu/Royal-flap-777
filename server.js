@@ -4,18 +4,34 @@ const admin = require('firebase-admin');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ============ CORS CONFIGURATION ============
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
+}));
 
-// Initialize Firebase Admin with multiple environment variables
+app.options('*', cors());
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Request logger
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
+// ============ FIREBASE INITIALIZATION ============
 let serviceAccount;
 
 try {
-  // Check if we have individual environment variables
+  // Check for individual environment variables
   if (process.env.FB_PRIVATE_KEY && process.env.FB_CLIENT_EMAIL && process.env.FB_PROJECT_ID) {
-    // Fix: Replace literal '\n' strings with actual newlines
     let privateKey = process.env.FB_PRIVATE_KEY;
+    // Replace literal \n with actual newlines
     if (privateKey.includes('\\n')) {
       privateKey = privateKey.replace(/\\n/g, '\n');
     }
@@ -33,86 +49,139 @@ try {
       client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.FB_CLIENT_EMAIL)}`,
       universe_domain: "googleapis.com"
     };
-    console.log('✅ Firebase initialized from individual environment variables');
+    console.log('✅ Firebase initialized from environment variables');
   }
-  // Check if we have combined FIREBASE_CONFIG
+  // Check for combined config
   else if (process.env.FIREBASE_CONFIG) {
     serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-    console.log('✅ Firebase initialized from combined FIREBASE_CONFIG');
+    console.log('✅ Firebase initialized from FIREBASE_CONFIG');
   }
-  // Fallback to local file
+  // Fallback to local file (development only)
   else {
-    serviceAccount = require('./serviceAccountKey.json');
-    console.log('✅ Firebase initialized from local file');
+    try {
+      serviceAccount = require('./serviceAccountKey.json');
+      console.log('✅ Firebase initialized from local file');
+    } catch (err) {
+      console.error('❌ No Firebase configuration found!');
+      process.exit(1);
+    }
   }
 } catch (error) {
-  console.error('ERROR: No Firebase configuration found!');
-  console.error('Please set either:');
-  console.error('  - FB_PRIVATE_KEY, FB_CLIENT_EMAIL, FB_PROJECT_ID');
-  console.error('  - Or FIREBASE_CONFIG (single JSON string)');
+  console.error('❌ Firebase config error:', error.message);
   process.exit(1);
 }
 
-// Validate private key format
-if (serviceAccount.private_key && !serviceAccount.private_key.includes('BEGIN PRIVATE KEY')) {
-  console.error('ERROR: Private key format is invalid!');
-  console.error('Make sure the private key contains "BEGIN PRIVATE KEY"');
-  process.exit(1);
-}
-
+// Initialize Firebase Admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
 const db = admin.firestore();
-console.log('✅ Firestore ready');
+console.log('✅ Firestore connected');
 
 // ============ API ROUTES ============
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Flappy777 Game Backend',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: 'GET /health',
+      saveScore: 'POST /api/scores',
+      topScores: 'GET /api/scores/top',
+      playerScore: 'GET /api/scores/player/:name',
+      userStats: 'GET /api/user/:userId/stats',
+      leaderboard: 'GET /api/leaderboard',
+      gameResult: 'POST /api/game/result'
+    }
+  });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: 'connected'
+  });
+});
 
 // Save game score
 app.post('/api/scores', async (req, res) => {
   try {
-    const { playerName, score, level, userId } = req.body;
+    const { playerName, score, level, userId, gameType } = req.body;
     
     if (!playerName || score === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing required fields: playerName and score are required' 
+      });
     }
     
     const scoreData = {
-      playerName,
+      playerName: playerName.substring(0, 50),
       score: Number(score),
       level: level || 1,
+      gameType: gameType || 'casino_shuffle',
       userId: userId || null,
       date: new Date().toISOString(),
       timestamp: Date.now()
     };
     
     const docRef = await db.collection('scores').add(scoreData);
-    res.status(201).json({ success: true, id: docRef.id, ...scoreData });
+    
+    // Check if this is a high score
+    const playerBestQuery = await db.collection('scores')
+      .where('playerName', '==', playerName)
+      .orderBy('score', 'desc')
+      .limit(1)
+      .get();
+    
+    let isHighScore = false;
+    let currentBest = 0;
+    playerBestQuery.forEach(doc => {
+      currentBest = doc.data().score;
+    });
+    isHighScore = score > currentBest;
+    
+    res.status(201).json({ 
+      success: true, 
+      id: docRef.id,
+      isHighScore,
+      message: isHighScore ? '🎉 New High Score!' : 'Score saved'
+    });
   } catch (error) {
     console.error('Error saving score:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 // Get top scores
 app.get('/api/scores/top', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const topScores = await db.collection('scores')
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    
+    const scoresSnapshot = await db.collection('scores')
       .orderBy('score', 'desc')
-      .limit(Math.min(limit, 50))
+      .limit(limit)
       .get();
     
     const scores = [];
-    topScores.forEach(doc => {
-      scores.push({ id: doc.id, ...doc.data() });
+    scoresSnapshot.forEach(doc => {
+      scores.push({
+        id: doc.id,
+        ...doc.data()
+      });
     });
     
     res.json({ success: true, scores });
   } catch (error) {
     console.error('Error getting top scores:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -120,6 +189,7 @@ app.get('/api/scores/top', async (req, res) => {
 app.get('/api/scores/player/:name', async (req, res) => {
   try {
     const playerName = decodeURIComponent(req.params.name);
+    
     const playerScores = await db.collection('scores')
       .where('playerName', '==', playerName)
       .orderBy('score', 'desc')
@@ -131,10 +201,14 @@ app.get('/api/scores/player/:name', async (req, res) => {
       bestScore = { id: doc.id, ...doc.data() };
     });
     
-    res.json(bestScore || { success: true, message: 'No scores found' });
+    res.json({ 
+      success: true, 
+      bestScore,
+      message: bestScore ? 'Found best score' : 'No scores found for this player'
+    });
   } catch (error) {
     console.error('Error getting player score:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -146,19 +220,18 @@ app.get('/api/user/:userId/stats', async (req, res) => {
     const userScores = await db.collection('scores')
       .where('userId', '==', userId)
       .orderBy('score', 'desc')
-      .limit(10)
+      .limit(20)
       .get();
     
     const scores = [];
     userScores.forEach(doc => {
-      scores.push({ id: doc.id, ...doc.data() });
+      scores.push(doc.data());
     });
     
     const totalGames = scores.length;
-    const bestScore = scores.length > 0 ? scores[0].score : 0;
-    const averageScore = totalGames > 0 
-      ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / totalGames) 
-      : 0;
+    const bestScore = totalGames > 0 ? Math.max(...scores.map(s => s.score)) : 0;
+    const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
+    const averageScore = totalGames > 0 ? Math.round(totalScore / totalGames) : 0;
     
     res.json({
       success: true,
@@ -166,40 +239,57 @@ app.get('/api/user/:userId/stats', async (req, res) => {
         totalGames,
         bestScore,
         averageScore,
+        totalScore,
         recentScores: scores.slice(0, 5)
       }
     });
   } catch (error) {
     console.error('Error getting user stats:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Get leaderboard
+// Get leaderboard with pagination
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
     const offset = (page - 1) * limit;
     
-    const scoresQuery = await db.collection('scores')
+    const scoresSnapshot = await db.collection('scores')
       .orderBy('score', 'desc')
       .limit(limit)
+      .offset(offset)
       .get();
     
     const scores = [];
-    scoresQuery.forEach(doc => {
-      scores.push({ rank: scores.length + 1 + offset, id: doc.id, ...doc.data() });
+    scoresSnapshot.forEach((doc, index) => {
+      scores.push({
+        rank: offset + index + 1,
+        id: doc.id,
+        playerName: doc.data().playerName,
+        score: doc.data().score,
+        date: doc.data().date
+      });
     });
+    
+    // Get total count
+    const totalSnapshot = await db.collection('scores').count().get();
+    const total = totalSnapshot.data().count;
     
     res.json({
       success: true,
       data: scores,
-      pagination: { page, limit }
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     });
   } catch (error) {
     console.error('Error getting leaderboard:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -208,8 +298,15 @@ app.post('/api/game/result', async (req, res) => {
   try {
     const { playerName, score, gameType, userId, metadata } = req.body;
     
+    if (!playerName || score === undefined) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing required fields' 
+      });
+    }
+    
     const gameResult = {
-      playerName,
+      playerName: playerName.substring(0, 50),
       score: Number(score),
       gameType: gameType || 'casino_shuffle',
       userId: userId || null,
@@ -218,11 +315,12 @@ app.post('/api/game/result', async (req, res) => {
       timestamp: Date.now()
     };
     
-    const docRef = await db.collection('gameResults').add(gameResult);
+    // Save to gameResults collection
+    const resultRef = await db.collection('gameResults').add(gameResult);
     
     // Also save to scores collection for leaderboard
-    await db.collection('scores').add({
-      playerName,
+    const scoreRef = await db.collection('scores').add({
+      playerName: playerName.substring(0, 50),
       score: Number(score),
       gameType: gameType || 'casino_shuffle',
       userId: userId || null,
@@ -230,76 +328,56 @@ app.post('/api/game/result', async (req, res) => {
       timestamp: Date.now()
     });
     
-    // Check if this is a high score for this player
-    let isHighScore = false;
+    // Check for high score
     const playerBest = await db.collection('scores')
       .where('playerName', '==', playerName)
       .orderBy('score', 'desc')
       .limit(1)
       .get();
     
+    let isHighScore = false;
     let currentBest = 0;
     playerBest.forEach(doc => {
       currentBest = doc.data().score;
     });
-    isHighScore = score > currentBest;
+    isHighScore = score >= currentBest;
     
-    res.status(201).json({ 
-      success: true, 
-      id: docRef.id, 
+    res.status(201).json({
+      success: true,
+      id: resultRef.id,
+      scoreId: scoreRef.id,
       isHighScore,
-      message: isHighScore ? '🎉 New High Score!' : 'Score saved successfully'
+      message: isHighScore ? '🎉 New High Score!' : 'Game result saved'
     });
   } catch (error) {
     console.error('Error saving game result:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    name: 'Flappy777 Game Backend',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: [
-      'GET  /health',
-      'GET  /',
-      'POST /api/scores',
-      'GET  /api/scores/top',
-      'GET  /api/scores/player/:name',
-      'GET  /api/user/:userId/stats',
-      'GET  /api/leaderboard',
-      'POST /api/game/result'
-    ]
-  });
-});
-
 // 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: `Cannot ${req.method} ${req.url}`,
+    message: 'Endpoint not found'
+  });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error'
+  });
 });
 
-// Start server
+// ============ START SERVER ============
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
-  console.log(`🎮 API ready: http://localhost:${PORT}/api`);
+  console.log(`🎮 API base: http://localhost:${PORT}/api`);
+  console.log(`✅ CORS enabled for all origins\n`);
 });
