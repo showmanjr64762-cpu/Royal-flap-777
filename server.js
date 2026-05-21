@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
-const path = require('path');
 
 const app = express();
 
@@ -9,19 +8,43 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Firebase Admin with environment variable support
+// Initialize Firebase Admin with multiple environment variables
 let serviceAccount;
+
 try {
-  // Try to load from file first (local development)
-  serviceAccount = require('./serviceAccountKey.json');
-} catch (error) {
-  // For production on Render, use environment variable
-  if (process.env.FIREBASE_CONFIG) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-  } else {
-    console.error('ERROR: No Firebase configuration found!');
-    process.exit(1);
+  // Check if we have individual environment variables (your existing setup)
+  if (process.env.FB_PRIVATE_KEY && process.env.FB_CLIENT_EMAIL && process.env.FB_PROJECT_ID) {
+    serviceAccount = {
+      type: "service_account",
+      project_id: process.env.FB_PROJECT_ID,
+      private_key_id: process.env.FB_PRIVATE_KEY_ID || "auto",
+      private_key: process.env.FB_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.FB_CLIENT_EMAIL,
+      client_id: process.env.FB_CLIENT_ID || "",
+      auth_uri: "https://accounts.google.com/o/oauth2/auth",
+      token_uri: "https://oauth2.googleapis.com/token",
+      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FB_CLIENT_EMAIL}`,
+      universe_domain: "googleapis.com"
+    };
+    console.log('✅ Firebase initialized from individual environment variables');
   }
+  // Check if we have combined FIREBASE_CONFIG (new setup)
+  else if (process.env.FIREBASE_CONFIG) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+    console.log('✅ Firebase initialized from combined FIREBASE_CONFIG');
+  }
+  // Fallback to local file
+  else {
+    serviceAccount = require('./serviceAccountKey.json');
+    console.log('✅ Firebase initialized from local file');
+  }
+} catch (error) {
+  console.error('ERROR: No Firebase configuration found!');
+  console.error('Please set either:');
+  console.error('  - FB_PRIVATE_KEY, FB_CLIENT_EMAIL, FB_PROJECT_ID (your current setup)');
+  console.error('  - Or FIREBASE_CONFIG (single JSON string)');
+  process.exit(1);
 }
 
 admin.initializeApp({
@@ -29,8 +52,7 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-
-console.log('✅ Firebase Admin initialized successfully');
+console.log('✅ Firestore ready');
 
 // ============ API ROUTES ============
 
@@ -53,7 +75,7 @@ app.post('/api/scores', async (req, res) => {
     };
     
     const docRef = await db.collection('scores').add(scoreData);
-    res.status(201).json({ id: docRef.id, ...scoreData });
+    res.status(201).json({ success: true, id: docRef.id, ...scoreData });
   } catch (error) {
     console.error('Error saving score:', error);
     res.status(500).json({ error: error.message });
@@ -103,12 +125,11 @@ app.get('/api/scores/player/:name', async (req, res) => {
   }
 });
 
-// Get user stats (for your game)
+// Get user stats
 app.get('/api/user/:userId/stats', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Get user's scores
     const userScores = await db.collection('scores')
       .where('userId', '==', userId)
       .orderBy('score', 'desc')
@@ -120,7 +141,6 @@ app.get('/api/user/:userId/stats', async (req, res) => {
       scores.push({ id: doc.id, ...doc.data() });
     });
     
-    // Calculate stats
     const totalGames = scores.length;
     const bestScore = scores.length > 0 ? scores[0].score : 0;
     const averageScore = totalGames > 0 
@@ -142,18 +162,13 @@ app.get('/api/user/:userId/stats', async (req, res) => {
   }
 });
 
-// Get global leaderboard with pagination
+// Get leaderboard
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
     
-    // Get total count
-    const totalSnapshot = await db.collection('scores').count().get();
-    const total = totalSnapshot.data().count;
-    
-    // Get paginated scores
     const scoresQuery = await db.collection('scores')
       .orderBy('score', 'desc')
       .limit(limit)
@@ -167,12 +182,7 @@ app.get('/api/leaderboard', async (req, res) => {
     res.json({
       success: true,
       data: scores,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
+      pagination: { page, limit }
     });
   } catch (error) {
     console.error('Error getting leaderboard:', error);
@@ -180,7 +190,7 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-// Submit game result (combined endpoint)
+// Submit game result
 app.post('/api/game/result', async (req, res) => {
   try {
     const { playerName, score, gameType, userId, metadata } = req.body;
@@ -197,8 +207,29 @@ app.post('/api/game/result', async (req, res) => {
     
     const docRef = await db.collection('gameResults').add(gameResult);
     
-    // Check if this is a high score
-    const isHighScore = await checkIfHighScore(playerName, score);
+    // Also save to scores collection for leaderboard
+    await db.collection('scores').add({
+      playerName,
+      score: Number(score),
+      gameType: gameType || 'casino_shuffle',
+      userId: userId || null,
+      date: new Date().toISOString(),
+      timestamp: Date.now()
+    });
+    
+    // Check if this is a high score for this player
+    let isHighScore = false;
+    const playerBest = await db.collection('scores')
+      .where('playerName', '==', playerName)
+      .orderBy('score', 'desc')
+      .limit(1)
+      .get();
+    
+    let currentBest = 0;
+    playerBest.forEach(doc => {
+      currentBest = doc.data().score;
+    });
+    isHighScore = score > currentBest;
     
     res.status(201).json({ 
       success: true, 
@@ -212,28 +243,7 @@ app.post('/api/game/result', async (req, res) => {
   }
 });
 
-// Helper function to check high scores
-async function checkIfHighScore(playerName, score) {
-  try {
-    const playerBest = await db.collection('scores')
-      .where('playerName', '==', playerName)
-      .orderBy('score', 'desc')
-      .limit(1)
-      .get();
-    
-    let currentBest = 0;
-    playerBest.forEach(doc => {
-      currentBest = doc.data().score;
-    });
-    
-    return score > currentBest;
-  } catch (error) {
-    console.error('Error checking high score:', error);
-    return false;
-  }
-}
-
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
