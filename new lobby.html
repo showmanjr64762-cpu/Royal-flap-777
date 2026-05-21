@@ -140,6 +140,13 @@
     .flappy-start-btn { background: linear-gradient(145deg, #e67e22, #d35400); color: white; border: none; padding: 13px; font-size: 21px; font-weight: bold; border-radius: 30px; cursor: pointer; width: 80%; margin-top: 8px; }
     .gameover-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(145deg, #1f3e48, #0e2a32); border-radius: 20px; padding: 15px 25px; text-align: center; z-index: 4001; width: 250px; border: 2px solid #ff4444; }
     .close-popup { position: absolute; top: 10px; right: 15px; background: red; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+    
+    .leaderboard-container { max-height: 400px; overflow-y: auto; margin-top: 15px; }
+    .leaderboard-entry { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(255,215,0,0.1); font-size: 0.8rem; }
+    .leaderboard-rank { color: #ffd700; font-weight: bold; width: 40px; }
+    .leaderboard-name { flex: 1; }
+    .leaderboard-score { color: #2ecc71; font-family: monospace; font-weight: bold; }
+    .refresh-leaderboard { background: #ffd70020; border: 1px solid #ffd700; border-radius: 20px; padding: 5px 15px; margin-top: 10px; cursor: pointer; }
   </style>
 </head>
 <body class="theme-premium-black">
@@ -160,7 +167,7 @@
   <div class="modal-overlay" id="profileModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('profileModal')">×</span><div style="text-align:center;"><div class="profile-avatar" id="profileAvatarDisplay" style="width:80px;height:80px;font-size:2.5rem;margin:0 auto;cursor:pointer;" onclick="showAvatarSelector()">🐉</div><h3 id="profileName" style="color:white;margin-top:8px;"></h3><div style="color:#aaa;font-size:0.7rem;" id="profileUserId"></div></div><div class="profile-row"><span>VIP Level</span><span id="profileVipLevel" style="color:#ffd700;">0</span></div><div class="profile-row"><span>Coins</span><span id="profileCoins" style="color:#ffd700;">0</span></div><div class="profile-row"><span>Total Bets</span><span id="profileTotalBets">0</span></div><div class="profile-row"><span>Wins</span><span id="profileWins">0</span></div><div class="profile-row"><span>Total Spent</span><span id="profileTotalSpent">0</span></div><div class="profile-row"><span>Next VIP</span><span id="profileNextVip"></span></div><div class="progress-meter"><div class="progress-fill-meter" id="vipProgressBar"></div></div><div class="profile-row"><span>JazzCash Number</span><input id="jazzcashNumber" placeholder="03XXXXXXXXX (11 digits)" style="background:rgba(255,255,255,0.1);border:1px solid #ffd70033;border-radius:8px;padding:5px;color:white;"></div><div class="profile-row"><span>Easypaisa Number</span><input id="easypaisaNumber" placeholder="03XXXXXXXXX (11 digits)" style="background:rgba(255,255,255,0.1);border:1px solid #ffd70033;border-radius:8px;padding:5px;color:white;"></div><button class="btn-gold" onclick="saveAccountDetails()" style="margin-top:10px;width:100%;">Save Account Details</button><button class="btn-outline" onclick="changeUsername()" style="margin-top:8px;width:100%;">Change Username</button><button class="btn-outline" onclick="firebaseLogout()" style="margin-top:8px;width:100%;background:transparent;border:1px solid #ff6b6b;color:#ff6b6b;">🚪 Logout</button><div id="avatarSelector" class="avatar-grid" style="display:none;"><div class="avatar-option" onclick="selectAvatar('🐉')">🐉</div><div class="avatar-option" onclick="selectAvatar('🐱')">🐱</div><div class="avatar-option" onclick="selectAvatar('🐶')">🐶</div><div class="avatar-option" onclick="selectAvatar('🦁')">🦁</div><div class="avatar-option" onclick="selectAvatar('🐸')">🐸</div><div class="avatar-option" onclick="selectAvatar('🐼')">🐼</div><div class="avatar-option" onclick="selectAvatar('🐨')">🐨</div><div class="avatar-option" onclick="selectAvatar('🦊')">🦊</div></div></div></div>
 
   <!-- Offers Section -->
-  <div class="fullscreen-section" id="offersSection"><div class="fullscreen-header"><button class="back-btn" onclick="closeFullscreen('offersSection')">← Back</button><span style="font-family:'Playfair Display';font-size:1.3rem;color:#ffd700;">🎁 Summer Offers</span></div><div style="padding:1.5rem;"><div class="offers-tabs" id="offersTabs"><button class="offer-tab-btn active" data-tab="bonus">🎁 Bonus</button><button class="offer-tab-btn" data-tab="refer">🤝 Refer</button><button class="offer-tab-btn" data-tab="support">🛡️ Support</button><button class="offer-tab-btn" data-tab="vip">👑 VIP</button></div><div id="tabContent"></div></div></div>
+  <div class="fullscreen-section" id="offersSection"><div class="fullscreen-header"><button class="back-btn" onclick="closeFullscreen('offersSection')">← Back</button><span style="font-family:'Playfair Display';font-size:1.3rem;color:#ffd700;">🎁 Summer Offers</span></div><div style="padding:1.5rem;"><div class="offers-tabs" id="offersTabs"><button class="offer-tab-btn active" data-tab="bonus">🎁 Bonus</button><button class="offer-tab-btn" data-tab="refer">🤝 Refer</button><button class="offer-tab-btn" data-tab="support">🛡️ Support</button><button class="offer-tab-btn" data-tab="vip">👑 VIP</button><button class="offer-tab-btn" data-tab="leaderboard">🏆 Leaderboard</button></div><div id="tabContent"></div></div></div>
 
   <!-- Shop Section -->
   <div class="fullscreen-section" id="shopSection"><div class="fullscreen-header"><button class="back-btn" onclick="closeFullscreen('shopSection')">← Back</button><span style="color:#ffd700;">🛒 Shop</span></div><div style="padding:1rem;"><div class="shop-item" onclick="showPaymentPopup(100, 102, 2)"><div>💰 ₨100</div><div>100 Coins +2 Bonus<br><span style="font-size:0.7rem;">Total: 102 Coins</span></div><div>BUY NOW →</div></div><div class="shop-item" onclick="showPaymentPopup(500, 525, 25)"><div>💰 ₨500</div><div>500 Coins +25 Bonus<br><span style="font-size:0.7rem;">Total: 525 Coins</span></div><div>BUY NOW →</div></div><div class="shop-item" onclick="showPaymentPopup(1000, 1050, 50)"><div>💰 ₨1000</div><div>1.0K Coins +50 Bonus<br><span style="font-size:0.7rem;">Total: 1.1K Coins</span></div><div>BUY NOW →</div></div><div class="shop-item" onclick="showPaymentPopup(3000, 3150, 150)"><div>💰 ₨3000</div><div>3.0K Coins +150 Bonus<br><span style="font-size:0.7rem;">Total: 3.1K Coins</span></div><div>BUY NOW →</div></div><div class="shop-item" onclick="showPaymentPopup(5000, 5250, 250)"><div>💰 ₨5000</div><div>5.0K Coins +250 Bonus<br><span style="font-size:0.7rem;">Total: 5.3K Coins</span></div><div>BUY NOW →</div></div><div class="shop-item" onclick="showPaymentPopup(10000, 10500, 500)"><div>💰 ₨10000</div><div>10.0K Coins +500 Bonus<br><span style="font-size:0.7rem;">Total: 10.5K Coins</span></div><div>BUY NOW →</div></div></div></div>
@@ -177,12 +184,12 @@
   <!-- Main App -->
   <div class="app-container" id="appContainer">
     <header class="lobby-header"><div class="header-left" style="display:flex; gap:0.6rem;"><div class="profile-avatar" id="headerAvatar" onclick="openModal('profileModal')">🐉</div><div><span class="username" id="headerUsername">TropicalSurfer</span><br><span class="user-status">🌺 On Vacation</span></div><div class="balance-container"><span class="balance-amount" id="lobbyBalance">0</span> 🐚</div></div><div id="authButtons"></div><div class="header-actions"><button class="header-btn" onclick="openModal('downloadPopup')">📱</button><button class="header-btn" onclick="openModal('notificationPanel')">🔔</button></div></header>
-    <div class="lobby-content"><div class="games-section"><h2 style="font-family:'Playfair Display';color:#ffd700;">🎮 Featured Games</h2><div class="games-grid"><div class="game-tile" onclick="enterGame()"><div class="game-icon">👑</div><div class="game-name">casino shuffle 786</div><div style="color:#ffd700;">Min: 10 🐚</div><button class="play-btn">Play Now</button></div><div class="game-tile" onclick="enterFlappyGame()"><div class="game-icon">🐦</div><div class="game-name">Flappy Bird</div><div style="color:#ffd700;">Min: 10 🐚</div><button class="play-btn">Play Now</button></div></div></div></div>
+    <div class="lobby-content"><div class="games-section"><h2 style="font-family:'Playfair Display';color:#ffd700;">🎮 Featured Games</h2><div class="games-grid"><div class="game-tile" onclick="enterGame()"><div class="game-icon">👑</div><div class="game-name">Casino Shuffle 786</div><div style="color:#ffd700;">Min: 10 🐚</div><button class="play-btn">Play Now</button></div><div class="game-tile" onclick="enterFlappyGame()"><div class="game-icon">🐦</div><div class="game-name">Flappy Bird</div><div style="color:#ffd700;">Min: 10 🐚</div><button class="play-btn">Play Now</button></div></div></div></div>
     <nav class="bottom-nav"><button class="nav-item active" onclick="setActiveNav(this); exitAllGames()">🏠 Home</button><button class="nav-item" onclick="openFullscreen('offersSection')">🎁 Offers</button><button class="nav-item" onclick="openFullscreen('shopSection')">🛒 Shop</button><button class="nav-item" onclick="openWithdraw()">💸 Withdraw</button></nav>
   </div>
 
   <!-- ORIGINAL CASINO SHUFFLE GAME -->
-  <div class="game-view" id="gameView"><button class="back-to-lobby" onclick="exitGame()">← Lobby</button><div class="game-screen"><div class="game-header"><h1>Casino shuffle 786</h1></div><div class="balance-bar"><span>💰 Balance: </span><span class="balance-amount" id="balanceDisplay">0</span></div><div class="stats-panel"><div class="stat-box"><div class="stat-label">Current Win</div><div class="stat-value win" id="currentWin">0</div></div><div class="stat-box"><div class="stat-label">Multiplier</div><div class="stat-value multiplier" id="multiplier">1.00x</div></div><div class="stat-box"><div class="stat-label">Pairs</div><div class="stat-value pairs" id="pairsDisplay">0/10</div></div></div><div class="bet-panel" id="betPanel"><div class="bet-panel-title">Select Your Bet</div><div class="bet-options"><button class="bet-option" data-bet="10">10</button><button class="bet-option" data-bet="25">25</button><button class="bet-option" data-bet="50">50</button><button class="bet-option" data-bet="100">100</button><button class="bet-option" data-bet="250">250</button><button class="bet-option" data-bet="500">500</button></div></div><div class="action-buttons"><button class="action-btn start-btn" id="startBtn">START GAME</button><button class="action-btn cashout-btn hidden" id="cashoutBtn">CASH OUT</button><button class="action-btn continue-btn hidden" id="continueBtn">CONTINUE</button></div><div class="message-display"><p class="message-text" id="messageText">Select your bet and tap START GAME</p></div><div class="card-grid" id="cardGrid"></div></div></div>
+  <div class="game-view" id="gameView"><button class="back-to-lobby" onclick="exitGame()">← Lobby</button><div class="game-screen"><div class="game-header"><h1>Casino Shuffle 786</h1></div><div class="balance-bar"><span>💰 Balance: </span><span class="balance-amount" id="balanceDisplay">0</span></div><div class="stats-panel"><div class="stat-box"><div class="stat-label">Current Win</div><div class="stat-value win" id="currentWin">0</div></div><div class="stat-box"><div class="stat-label">Multiplier</div><div class="stat-value multiplier" id="multiplier">1.00x</div></div><div class="stat-box"><div class="stat-label">Pairs</div><div class="stat-value pairs" id="pairsDisplay">0/10</div></div></div><div class="bet-panel" id="betPanel"><div class="bet-panel-title">Select Your Bet</div><div class="bet-options"><button class="bet-option" data-bet="10">10</button><button class="bet-option" data-bet="25">25</button><button class="bet-option" data-bet="50">50</button><button class="bet-option" data-bet="100">100</button><button class="bet-option" data-bet="250">250</button><button class="bet-option" data-bet="500">500</button></div></div><div class="action-buttons"><button class="action-btn start-btn" id="startBtn">START GAME</button><button class="action-btn cashout-btn hidden" id="cashoutBtn">CASH OUT</button><button class="action-btn continue-btn hidden" id="continueBtn">CONTINUE</button></div><div class="message-display"><p class="message-text" id="messageText">Select your bet and tap START GAME</p></div><div class="card-grid" id="cardGrid"></div></div></div>
   <div class="win-overlay" id="winOverlay"><div class="win-label">YOU WON</div><div class="win-amount" id="winAmountDisplay">0</div><button class="play-again-btn" id="winPlayAgainBtn">PLAY AGAIN</button></div>
   <div class="lose-overlay" id="loseOverlay"><div class="lose-icon">💣</div><div class="lose-text">BOOM!</div><button class="play-again-btn" id="losePlayAgainBtn">TRY AGAIN</button></div>
 
@@ -194,6 +201,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+    // ============ CONFIGURATION ============
     const firebaseConfig = {
       apiKey: "AIzaSyDUSi0mM3bYMEozFD3Ahh0vUZ5gBG1dNTU",
       authDomain: "flappy77777.firebaseapp.com",
@@ -203,10 +211,17 @@
       appId: "1:393994889085:web:b53968e63c51ecd10e4e14"
     };
 
+    // BACKEND API URL - CHANGE THIS TO YOUR RENDER URL AFTER DEPLOYMENT
+    const API_URL = 'https://flappy-777.onrender.com';
+    // For local testing, use: const API_URL = 'http://localhost:3000/api';
+    // After deploying to Render, replace with your actual Render URL
+
+    // ============ FIREBASE INITIALIZATION ============
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // ============ GLOBAL VARIABLES ============
     window.showToast = function(msg) { let t = document.getElementById('customToast'); t.textContent = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
     window.alert = window.showToast;
     
@@ -228,6 +243,124 @@
     let pendingPurchase = null;
     let referralData = { totalReferrals: 35, totalEarnings: 10900, activeReferrals: 5, referrals: [{name:'User1',status:'Active',deposit:5000,commission:500,joined:'2024-01-15'},{name:'User2',status:'Active',deposit:3000,commission:300,joined:'2024-01-20'},{name:'User3',status:'Pending',deposit:0,commission:0,joined:'2024-02-01'}] };
     
+    // ============ BACKEND API FUNCTIONS ============
+    
+    // Save score to backend
+    async function saveScoreToBackend(playerName, score, gameType, userId) {
+      try {
+        const response = await fetch(`${API_URL}/game/result`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            playerName: playerName, 
+            score: score, 
+            gameType: gameType,
+            userId: userId || (currentFirebaseUser ? currentFirebaseUser.uid : null)
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          if (data.isHighScore) {
+            showToast(`🏆 New High Score: ${score}!`);
+          }
+          console.log('Score saved:', data);
+        }
+        return data;
+      } catch (error) {
+        console.error('Backend save error:', error);
+        // Fallback: save to Firebase directly if backend fails
+        await saveScoreToFirebase(playerName, score, gameType);
+      }
+    }
+    
+    // Fallback: Save to Firebase directly
+    async function saveScoreToFirebase(playerName, score, gameType) {
+      try {
+        if (!currentFirebaseUser) return;
+        const userRef = doc(db, "users", currentFirebaseUser.uid);
+        const userDoc = await getDoc(userRef);
+        let highScore = 0;
+        if (userDoc.exists() && userDoc.data().highScore) {
+          highScore = userDoc.data().highScore;
+        }
+        if (score > highScore) {
+          await updateDoc(userRef, { highScore: score, lastGame: new Date() });
+          showToast(`🏆 New High Score: ${score}!`);
+        }
+      } catch (error) {
+        console.error('Firebase save error:', error);
+      }
+    }
+    
+    // Get leaderboard from backend
+    async function getLeaderboardFromBackend(limit = 10) {
+      try {
+        const response = await fetch(`${API_URL}/leaderboard?limit=${limit}`);
+        const data = await response.json();
+        if (data.success) {
+          return data.data;
+        }
+        return [];
+      } catch (error) {
+        console.error('Leaderboard error:', error);
+        return [];
+      }
+    }
+    
+    // Get player stats from backend
+    async function getPlayerStats(userId) {
+      try {
+        const response = await fetch(`${API_URL}/user/${userId}/stats`);
+        const data = await response.json();
+        if (data.success) {
+          return data.stats;
+        }
+        return null;
+      } catch (error) {
+        console.error('Stats error:', error);
+        return null;
+      }
+    }
+    
+    // Render leaderboard in tab
+    async function renderLeaderboardTab() {
+      const leaderboard = await getLeaderboardFromBackend(20);
+      let html = `<div class="bonus-card"><div><strong>🏆 Global Leaderboard</strong></div></div>
+        <div class="leaderboard-container">
+          <div class="leaderboard-entry" style="font-weight:bold; border-bottom:2px solid #ffd700;">
+            <span class="leaderboard-rank">Rank</span>
+            <span class="leaderboard-name">Player</span>
+            <span class="leaderboard-score">Score</span>
+          </div>`;
+      
+      if (leaderboard.length === 0) {
+        html += `<div class="leaderboard-entry">No scores yet. Be the first!</div>`;
+      } else {
+        leaderboard.forEach(entry => {
+          html += `<div class="leaderboard-entry">
+            <span class="leaderboard-rank">#${entry.rank || '—'}</span>
+            <span class="leaderboard-name">${escapeHtml(entry.playerName || 'Anonymous')}</span>
+            <span class="leaderboard-score">${formatNumber(entry.score)}</span>
+          </div>`;
+        });
+      }
+      
+      html += `</div>
+        <div style="text-align:center; margin-top:15px;">
+          <button class="refresh-leaderboard" onclick="renderLeaderboardTab()">🔄 Refresh</button>
+        </div>`;
+      document.getElementById('tabContent').innerHTML = html;
+    }
+    
+    // Helper: escape HTML
+    function escapeHtml(text) {
+      if (!text) return 'Anonymous';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // ============ FIREBASE USER DATA FUNCTIONS ============
     async function saveUserDataToFirestore() {
       if (!currentFirebaseUser) return;
       try {
@@ -261,6 +394,12 @@
           jazzcashNum = data.jazzcashNum || '';
           easypaisaNum = data.easypaisaNum || '';
           showToast(`🎉 Welcome back! Balance: ${balance} coins`);
+          
+          // Load stats from backend
+          const stats = await getPlayerStats(user.uid);
+          if (stats) {
+            console.log('Player stats:', stats);
+          }
         } else {
           await setDoc(userRef, {
             email: user.email,
@@ -288,6 +427,7 @@
       } catch (error) { console.error('Error loading user data:', error); }
     }
     
+    // ============ AUTH FUNCTIONS ============
     window.doFirebaseLogin = async function() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPass').value;
@@ -398,6 +538,7 @@
       showToast('Welcome Guest! (Register to save your progress across devices!)');
     }
     
+    // ============ VIP SYSTEM ============
     const VIP_LEVELS = [
       { level: 0, required: 0, daily: 5, weekly: 35, monthly: 60 },
       { level: 1, required: 40000, daily: 10, weekly: 70, monthly: 120 },
@@ -434,7 +575,6 @@
     
     function getRemaining(last, cd) { if(last === 0) return "Available now!"; let diff = (last + cd) - Date.now(); if(diff <= 0) return "Available now!"; let h = Math.floor(diff/(3600*1000)); let m = Math.floor((diff%(3600*1000))/(60*1000)); return `${h}h ${m}m left`; }
     
-    // FIXED: Global claimBonus function
     window.claimBonus = async function(type) { 
       if(!currentFirebaseUser && (!currentUser || currentUser.name === 'Guest')) { 
         showToast('Login or register to claim bonuses!'); 
@@ -483,6 +623,7 @@
     const avatars = ['🐉','🐱','🐶','🦁','🐸','🐼','🐨','🦊','🐧','🐙','🦄','🐝'];
     function getRandomAvatar() { return avatars[Math.floor(Math.random() * avatars.length)]; }
     
+    // ============ UI FUNCTIONS ============
     window.openModal = function(id) { document.getElementById(id).classList.add('active'); }
     window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
     window.openFullscreen = function(id) { document.getElementById(id).classList.add('active'); }
@@ -556,6 +697,7 @@
     
     window.exitAllGames = function() { exitGame(); if(flappyGame) flappyGame.stop(); document.getElementById('flappyGameSection').classList.remove('active'); }
     
+    // ============ TAB RENDERING FUNCTIONS ============
     function renderBonusTabContent() { 
       let c = document.getElementById('tabContent'); if(!c) return; updateVIPBonuses(); 
       c.innerHTML = `<div><h3 style="color:#ffd700;">🎁 Claim Your Bonuses (VIP ${getVIPLevel().level})</h3></div>
@@ -607,7 +749,7 @@
       document.getElementById('tabContent').innerHTML = html;
     }
     
-    // ORIGINAL CASINO SHUFFLE GAME
+    // ============ ORIGINAL CASINO SHUFFLE GAME ============
     const CONFIG = { PAIRS_COUNT: 10, BOMB_COUNT: 6, GOLDEN_COUNT: 2, GOLDEN_MULTIPLIER: 20, MULTIPLIERS: [1.5,2.0,2.5,3.0,4.0,5.0,7.0,10.0,15.0,22.0] };
     const CARD_VALUES = ['A','K','Q','J','10','9','8','7','6','5'];
     const CARD_SUITS = [{symbol:'♥',color:'red'},{symbol:'♠',color:'black'},{symbol:'♦',color:'red'},{symbol:'♣',color:'black'}];
@@ -667,6 +809,9 @@
               balance+=gameState.currentWin;
               wins++;
               updateUI();
+              // Save score to backend
+              const playerName = currentFirebaseUser ? currentFirebaseUser.email.split('@')[0] : (currentUser?.name || 'Guest');
+              saveScoreToBackend(playerName, gameState.currentWin, 'casino_shuffle', currentFirebaseUser?.uid);
               document.getElementById('winAmountDisplay').innerHTML=formatNumber(gameState.currentWin);
               document.getElementById('winOverlay').classList.add('active');
               gameState.isPlaying=false;
@@ -700,6 +845,9 @@
               balance+=gameState.currentWin;
               wins++;
               updateUI();
+              // Save score to backend on win
+              const playerName = currentFirebaseUser ? currentFirebaseUser.email.split('@')[0] : (currentUser?.name || 'Guest');
+              saveScoreToBackend(playerName, gameState.currentWin, 'casino_shuffle', currentFirebaseUser?.uid);
               document.getElementById('winAmountDisplay').innerHTML=formatNumber(gameState.currentWin);
               document.getElementById('winOverlay').classList.add('active');
               gameState.isPlaying=false;
@@ -725,6 +873,9 @@
       balance+=gameState.currentWin;
       wins++;
       await updateUI();
+      // Save score to backend on cashout
+      const playerName = currentFirebaseUser ? currentFirebaseUser.email.split('@')[0] : (currentUser?.name || 'Guest');
+      saveScoreToBackend(playerName, gameState.currentWin, 'casino_shuffle', currentFirebaseUser?.uid);
       document.getElementById('winAmountDisplay').innerHTML=formatNumber(gameState.currentWin);
       document.getElementById('winOverlay').classList.add('active');
       gameState.isPlaying=false;
@@ -751,12 +902,10 @@
     document.getElementById('startBtn').onclick=startGame;
     document.getElementById('cashoutBtn').onclick=cashout;
     document.getElementById('continueBtn').onclick=continuePlaying;
-    
-    // Fix Play Again buttons
     document.getElementById('winPlayAgainBtn').onclick = resetGame;
     document.getElementById('losePlayAgainBtn').onclick = resetGame;
     
-    // FLAPPY BIRD GAME
+    // ============ FLAPPY BIRD GAME ============
     let flappyGame = null;
     window.enterFlappyGame = function(){if(!currentFirebaseUser && (!currentUser || currentUser.name === 'Guest')){openModal('authModal');return;}document.getElementById('flappyGameSection').classList.add('active');if(!flappyGame)flappyGame=new FlappyBirdGame();flappyGame.reset();}
     window.exitFlappyGame = function(){if(flappyGame)flappyGame.stop();document.getElementById('flappyGameSection').classList.remove('active');}
@@ -792,19 +941,19 @@
         this.animFrame=requestAnimationFrame((t)=>this.gameLoop(t));
       }
       gameLoop(now){if(this.state!=='playing')return;let dt=Math.min((now-this.lastTime)/16.67,2);this.lastTime=now;this.bird.vel+=this.gravity*dt;this.bird.vel=Math.min(this.bird.vel,15);this.bird.y+=this.bird.vel*dt;if(this.bird.y+this.bird.size>=this.H-80||this.bird.y<=0){this.gameOver();return;}this.groundOffset=(this.groundOffset+this.pipeSpeed*dt)%24;for(let p of this.pipes)p.x-=this.pipeSpeed*dt;this.pipes=this.pipes.filter(p=>p.x>-this.pipeWidth-20);if(this.pipes.length===0||this.pipes[this.pipes.length-1].x<this.W-this.pipeInterval){this.pipes.push({x:this.W+20,gapY:140+Math.random()*280,passed:false,isMult:this.pendingMult});this.pendingMult=false;}let br={x:this.bird.x+5,y:this.bird.y+5,w:this.bird.size-10,h:this.bird.size-10};for(let p of this.pipes){if(!p.passed&&p.x+this.pipeWidth<this.bird.x){p.passed=true;this.score++;if(p.isMult&&this.multIndex<this.multChain.length){this.multiplier=this.multChain[this.multIndex];this.multIndex++;this.showMultiplier();}if(this.score%6===0&&this.score>0)this.pendingMult=true;}if(br.x+br.w>p.x&&br.x<p.x+this.pipeWidth){let top=p.gapY-this.pipeGap/2;let bot=p.gapY+this.pipeGap/2;if(br.y<top||br.y+br.h>bot){this.gameOver();return;}}}this.draw();this.animFrame=requestAnimationFrame((t)=>this.gameLoop(t));}
-      showMultiplier(){this.state='paused';if(this.animFrame)cancelAnimationFrame(this.animFrame);let win=Math.floor(this.bet*this.multiplier);let popup=document.createElement('div');popup.className='flappy-overlay';popup.innerHTML=`<h3>✨ MULTIPLIER!</h3><div style="font-size:28px;">x${this.multiplier.toFixed(1)}</div><div style="font-size:22px;">Win: ${formatNumber(win)}</div><div style="display:flex; gap:10px; margin-top:10px;"><button id="multCashout" style="background:#10b981; padding:8px 16px; border-radius:25px; border:none; cursor:pointer;">💰 CASHOUT</button><button id="multContinue" style="background:#f59e0b; padding:8px 16px; border-radius:25px; border:none; cursor:pointer;">🔄 CONTINUE</button></div>`;document.body.appendChild(popup);document.getElementById('multCashout').onclick=()=>{balance+=win;wins++;updateUI();popup.remove();this.state='bet';this.stop();this.showBetOverlay();this.draw();showToast(`Cashed out ${win} shells!`);};document.getElementById('multContinue').onclick=()=>{popup.remove();this.state='playing';this.lastTime=performance.now();this.animFrame=requestAnimationFrame((t)=>this.gameLoop(t));};}
+      showMultiplier(){this.state='paused';if(this.animFrame)cancelAnimationFrame(this.animFrame);let win=Math.floor(this.bet*this.multiplier);let popup=document.createElement('div');popup.className='flappy-overlay';popup.innerHTML=`<h3>✨ MULTIPLIER!</h3><div style="font-size:28px;">x${this.multiplier.toFixed(1)}</div><div style="font-size:22px;">Win: ${formatNumber(win)}</div><div style="display:flex; gap:10px; margin-top:10px;"><button id="multCashout" style="background:#10b981; padding:8px 16px; border-radius:25px; border:none; cursor:pointer;">💰 CASHOUT</button><button id="multContinue" style="background:#f59e0b; padding:8px 16px; border-radius:25px; border:none; cursor:pointer;">🔄 CONTINUE</button></div>`;document.body.appendChild(popup);document.getElementById('multCashout').onclick=()=>{balance+=win;wins++;updateUI();const playerName = currentFirebaseUser ? currentFirebaseUser.email.split('@')[0] : (currentUser?.name || 'Guest');saveScoreToBackend(playerName, win, 'flappy_bird', currentFirebaseUser?.uid);popup.remove();this.state='bet';this.stop();this.showBetOverlay();this.draw();showToast(`Cashed out ${win} shells!`);};document.getElementById('multContinue').onclick=()=>{popup.remove();this.state='playing';this.lastTime=performance.now();this.animFrame=requestAnimationFrame((t)=>this.gameLoop(t));};}
       continuePlaying(){let t=3;document.getElementById('flappyTimer').classList.remove('hidden');document.getElementById('flappyTimer').innerHTML='⏱️ '+t+'s';this.countdownTimer=setInterval(()=>{t--;document.getElementById('flappyTimer').innerHTML='⏱️ '+t+'s';if(t<=0){clearInterval(this.countdownTimer);document.getElementById('flappyMultOverlay').classList.add('hidden');this.state='playing';this.lastTime=performance.now();this.animFrame=requestAnimationFrame((t)=>this.gameLoop(t));}},1000);}
-      async cashout(){let win=Math.floor(this.bet*this.multiplier);balance+=win;wins++;await updateUI();this.state='bet';this.stop();this.showBetOverlay();this.draw();showToast(`Cashed out ${win} shells!`);}
+      async cashout(){let win=Math.floor(this.bet*this.multiplier);balance+=win;wins++;await updateUI();const playerName = currentFirebaseUser ? currentFirebaseUser.email.split('@')[0] : (currentUser?.name || 'Guest');saveScoreToBackend(playerName, win, 'flappy_bird', currentFirebaseUser?.uid);this.state='bet';this.stop();this.showBetOverlay();this.draw();showToast(`Cashed out ${win} shells!`);}
       gameOver(){this.state='gameover';if(this.animFrame)cancelAnimationFrame(this.animFrame);if(this.score>this.highScore){this.highScore=this.score;localStorage.setItem('flappyHS',this.highScore);}let popup=document.createElement('div');popup.className='gameover-popup';popup.innerHTML=`<div style="font-size:1.5rem;">💀 GAME OVER 💀</div><div style="font-size:1.2rem; margin:10px 0;">Score: ${this.score}</div><button id="gameoverOk" style="background:#ffd700; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">OK</button>`;document.body.appendChild(popup);document.getElementById('gameoverOk').onclick=()=>{popup.remove();this.reset();};}
       stop(){if(this.animFrame)cancelAnimationFrame(this.animFrame);if(this.countdownTimer)clearInterval(this.countdownTimer);if(this.wingTimer)clearInterval(this.wingTimer);}
       draw(){let ctx=this.ctx;ctx.clearRect(0,0,this.W,this.H);let grad=ctx.createLinearGradient(0,0,0,this.H);grad.addColorStop(0,'#7bc9ff');grad.addColorStop(1,'#f7e3b0');ctx.fillStyle=grad;ctx.fillRect(0,0,this.W,this.H);ctx.fillStyle='#4ade80';ctx.fillRect(0,this.H-80,this.W,8);ctx.fillStyle='#854d0e';ctx.fillRect(0,this.H-48,this.W,48);for(let i=0;i<20;i++){let x=(i*24-this.groundOffset)%(this.W+30)-15;if(x>0&&x<this.W){ctx.fillStyle='#86efac';ctx.beginPath();ctx.moveTo(x,this.H-80);ctx.lineTo(x-2,this.H-87);ctx.lineTo(x+2,this.H-87);ctx.fill();}}for(let p of this.pipes){let topH=p.gapY-this.pipeGap/2;let botY=p.gapY+this.pipeGap/2;ctx.fillStyle='#059669';ctx.fillRect(p.x,0,this.pipeWidth,topH);ctx.fillRect(p.x,botY,this.pipeWidth,this.H-botY-80);ctx.fillStyle='#047857';ctx.fillRect(p.x-4,topH-25,this.pipeWidth+8,25);ctx.fillRect(p.x-4,botY,this.pipeWidth+8,25);if(p.isMult){ctx.fillStyle='#FFD700';ctx.shadowBlur=8;ctx.fillRect(p.x+17,p.gapY-22,6,18);ctx.fillRect(p.x+35,p.gapY-22,6,18);ctx.shadowBlur=0;}}this.drawBird();if(this.state==='playing'||this.state==='paused'){ctx.fillStyle='white';ctx.font='bold 44px sans-serif';ctx.textAlign='center';ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.strokeText(this.score,this.W/2,65);ctx.fillText(this.score,this.W/2,65);if(this.multiplier>1){ctx.fillStyle='#FFD700';ctx.font='bold 18px monospace';ctx.textAlign='left';ctx.fillText('x'+this.multiplier.toFixed(1),15,45);}}ctx.textAlign='start';}
       drawBird(){let ctx=this.ctx;let bx=this.bird.x,by=this.bird.y,bs=this.bird.size;let rot=Math.min(Math.max(this.bird.vel*3,-25),45)*Math.PI/180;ctx.save();ctx.translate(bx+bs/2,by+bs/2);ctx.rotate(rot);ctx.translate(-(bx+bs/2),-(by+bs/2));ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.ellipse(bx+bs/2,by+bs/2,bs/2,bs/2-3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.ellipse(bx+bs/2-2,by+bs/2-1,9,10,0,0,Math.PI*2);ctx.fill();let wingY=this.wingUp?-8:6;ctx.fillStyle='#d97706';ctx.beginPath();ctx.ellipse(bx+12,by+bs/2+wingY,14,8,-0.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bx+bs-10,by+13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1e293b';ctx.beginPath();ctx.arc(bx+bs-9,by+13,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#78350f';ctx.fillRect(bx+bs-16,by+6,12,2);ctx.fillStyle='#ea580c';ctx.beginPath();ctx.moveTo(bx+bs-5,by+14);ctx.lineTo(bx+bs+5,by+17);ctx.lineTo(bx+bs-5,by+21);ctx.fill();ctx.fillStyle='#b45309';ctx.beginPath();ctx.moveTo(bx+4,by+bs/2);ctx.lineTo(bx-5,by+bs/2+7);ctx.lineTo(bx-5,by+bs/2-7);ctx.fill();ctx.restore();}
     }
     
-    // Particles
+    // ============ PARTICLES ============
     (function(){let c=document.getElementById('particlesContainer');let e=['☀️','🏖️','🫧','🌺','🐚'];for(let i=0;i<30;i++){let p=document.createElement('div');p.className='particle';p.innerHTML=e[Math.floor(Math.random()*e.length)];p.style.left=Math.random()*100+'%';p.style.top=Math.random()*100+'%';p.style.setProperty('--duration',(Math.random()*12+8)+'s');c.appendChild(p);}})();
     
-    // Splash screen animation
+    // ============ SPLASH SCREEN ============
     let progress = 0;
     let progressInterval = setInterval(() => {
       progress += Math.random() * 15 + 5;
@@ -823,7 +972,9 @@
       if (fill) fill.style.width = Math.min(progress, 100) + '%';
     }, 100);
     
-    updateUI(); updateAuthButtons();
+    // ============ INITIALIZATION ============
+    updateUI(); 
+    updateAuthButtons();
     
     // Tab listeners
     document.querySelectorAll('.offer-tab-btn').forEach(btn => {
@@ -835,6 +986,7 @@
         else if(tab === 'refer') renderReferTab();
         else if(tab === 'support') renderSupportTab();
         else if(tab === 'vip') renderVipTab();
+        else if(tab === 'leaderboard') renderLeaderboardTab();
       };
     });
     renderBonusTabContent();
