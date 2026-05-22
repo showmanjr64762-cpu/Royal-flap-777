@@ -25,6 +25,10 @@
     .card-front.golden { color: #000 !important; }
     .custom-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); color: #ffd700; padding: 12px 20px; border-radius: 50px; z-index: 9999; font-size: 14px; text-align: center; border: 2px solid #ffd700; max-width: 90%; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 10000; }
     
+    /* Auto-sync status indicator - NEW */
+    .sync-status { position: fixed; bottom: 70px; right: 15px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); border-radius: 20px; padding: 4px 10px; font-size: 10px; color: #ffd700; z-index: 999; border: 1px solid #ffd70033; pointer-events: none; font-family: monospace; }
+    .sync-status.syncing { color: #2ecc71; }
+    
     .tropical-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
     .sky-layer { position: absolute; inset: 0; background: linear-gradient(180deg, #87CEEB 0%, #48C9B0 60%, #0083B0 100%); animation: skyShift 18s infinite alternate ease-in-out; opacity: 0.25; }
     @keyframes skyShift { 0% { background: linear-gradient(180deg, #87CEEB 0%, #48C9B0 55%, #0083B0 100%); } 50% { background: linear-gradient(180deg, #FF8C42 0%, #FF6B6B 50%, #4A90D9 100%); } 100% { background: linear-gradient(180deg, #FFD700 0%, #F4A460 60%, #0D3B66 100%); } }
@@ -150,6 +154,7 @@
 <body class="theme-premium-black">
   <div class="tropical-bg"><div class="sky-layer"></div><div class="wave-container"><div class="wave wave1"></div><div class="wave wave2"></div><div class="wave wave3"></div></div><div class="particles" id="particlesContainer"></div></div>
   <div id="customToast" class="custom-toast"></div>
+  <div class="sync-status" id="syncStatus">🔄 Auto-sync (3s)</div>
   
   <div class="splash-screen" id="splashScreen">
     <div class="splash-logo">🏖️</div>
@@ -210,7 +215,7 @@
     <nav class="bottom-nav"><button class="nav-item active" onclick="setActiveNav(this); exitAllGames()">🏠 Home</button><button class="nav-item" onclick="openFullscreen('offersSection')">🎁 Offers</button><button class="nav-item" onclick="openFullscreen('shopSection')">🛒 Shop</button><button class="nav-item" onclick="openWithdraw()">💸 Withdraw</button></nav>
   </div>
 
-  <!-- GAME VIEWS (ORIGINAL - UNCHANGED) -->
+  <!-- GAME VIEWS -->
   <div class="game-view" id="gameView"><button class="back-to-lobby" onclick="exitGame()">← Lobby</button><div class="game-screen"><div class="game-header"><h1>Casino Shuffle 786</h1></div><div class="balance-bar"><span>💰 Balance: </span><span class="balance-amount" id="balanceDisplay">0</span></div><div class="stats-panel"><div class="stat-box"><div class="stat-label">Current Win</div><div class="stat-value win" id="currentWin">0</div></div><div class="stat-box"><div class="stat-label">Multiplier</div><div class="stat-value multiplier" id="multiplier">1.00x</div></div><div class="stat-box"><div class="stat-label">Pairs</div><div class="stat-value pairs" id="pairsDisplay">0/10</div></div></div><div class="bet-panel" id="betPanel"><div class="bet-panel-title">Select Your Bet</div><div class="bet-options"><button class="bet-option" data-bet="10">10</button><button class="bet-option" data-bet="25">25</button><button class="bet-option" data-bet="50">50</button><button class="bet-option" data-bet="100">100</button><button class="bet-option" data-bet="250">250</button><button class="bet-option" data-bet="500">500</button></div></div><div class="action-buttons"><button class="action-btn start-btn" id="startBtn">START GAME</button><button class="action-btn cashout-btn hidden" id="cashoutBtn">CASH OUT</button><button class="action-btn continue-btn hidden" id="continueBtn">CONTINUE</button></div><div class="message-display"><p class="message-text" id="messageText">Select your bet and tap START GAME</p></div><div class="card-grid" id="cardGrid"></div></div></div>
   <div class="win-overlay" id="winOverlay"><div class="win-label">YOU WON</div><div class="win-amount" id="winAmountDisplay">0</div><button class="play-again-btn" id="winPlayAgainBtn">PLAY AGAIN</button></div>
   <div class="lose-overlay" id="loseOverlay"><div class="lose-icon">💣</div><div class="lose-text">BOOM!</div><button class="play-again-btn" id="losePlayAgainBtn">TRY AGAIN</button></div>
@@ -238,7 +243,7 @@
 
     window.showToast = function(msg) { let t = document.getElementById('customToast'); t.textContent = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 3000); };
     
-    // Game state - ALWAYS START IN GUEST MODE
+    // Game state
     let currentFirebaseUser = null;
     let isGuestMode = true;
     let balance = 100;
@@ -252,7 +257,66 @@
     let myReferralCode = '';
     let referralEarningsTotal = 0;
     
-    // ============ REFERRAL SYSTEM ============
+    // Auto-sync interval reference
+    let autoSyncInterval = null;
+    
+    // ============ AUTO-SYNC FUNCTION (every 3 seconds) ============
+    async function autoSyncGameData() {
+      if (!currentFirebaseUser) return;
+      const syncStatus = document.getElementById('syncStatus');
+      syncStatus.classList.add('syncing');
+      syncStatus.textContent = '🔄 Syncing...';
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentFirebaseUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          let updated = false;
+          // Only sync if not in an active game to avoid interrupting gameplay
+          const isPlayingGame = gameState && gameState.isPlaying === true;
+          const isFlappyPlaying = flappyGame && flappyGame.state === 'playing';
+          
+          if (!isPlayingGame && !isFlappyPlaying) {
+            if (data.balance !== undefined && data.balance !== balance) {
+              balance = data.balance;
+              updated = true;
+            }
+            if (data.totalSpent !== undefined && data.totalSpent !== totalSpent) {
+              totalSpent = data.totalSpent;
+              updated = true;
+            }
+            if (data.totalBets !== undefined) totalBets = data.totalBets;
+            if (data.wins !== undefined) wins = data.wins;
+            if (updated) {
+              updateUI();
+              showToast(`🔄 Synced: ${balance} coins`);
+            }
+          } else {
+            // Just update non-critical stats
+            if (data.totalSpent !== undefined) totalSpent = data.totalSpent;
+            if (data.totalBets !== undefined) totalBets = data.totalBets;
+            if (data.wins !== undefined) wins = data.wins;
+          }
+          syncStatus.textContent = '✅ Synced';
+          setTimeout(() => { if(syncStatus) syncStatus.textContent = '🔄 Auto-sync (3s)'; }, 1500);
+        }
+      } catch(e) { console.error("Auto-sync error:", e); syncStatus.textContent = '⚠️ Sync error'; }
+      finally { setTimeout(() => syncStatus.classList.remove('syncing'), 500); }
+    }
+    
+    // Start auto-sync when logged in
+    function startAutoSync() {
+      if (autoSyncInterval) clearInterval(autoSyncInterval);
+      autoSyncInterval = setInterval(() => autoSyncGameData(), 3000);
+    }
+    
+    function stopAutoSync() {
+      if (autoSyncInterval) {
+        clearInterval(autoSyncInterval);
+        autoSyncInterval = null;
+      }
+    }
+    
+    // ============ REFERRAL SYSTEM - FIXED: Referrer gets 50 coins on signup ============
     const urlParams = new URLSearchParams(window.location.search);
     const urlReferralCode = urlParams.get('ref');
     if (urlReferralCode) {
@@ -415,6 +479,7 @@
       } catch (error) { showToast('❌ Login failed: ' + error.message); }
     }
     
+    // FIXED: Registration with correct referral bonus (referrer gets 50 coins)
     window.doFirebaseRegister = async function() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
@@ -434,8 +499,9 @@
         const newReferralCode = await generateReferralCode(uid, email);
         
         let referredById = null;
-        let signupBonus = 50;
+        let referrerBonusGiven = false;
         
+        // Process referral - give 50 coins to referrer
         if (referralCode && referralCode.trim()) {
           const q = query(collection(db, "users"), where("referralCode", "==", referralCode.trim()));
           const snap = await getDocs(q);
@@ -444,20 +510,23 @@
             const referrerRef = doc(db, "users", referredById);
             const referrerDoc = await getDoc(referrerRef);
             if (referrerDoc.exists()) {
-              await updateDoc(referrerRef, { balance: (referrerDoc.data().balance || 0) + 50 });
+              const currentReferrerBalance = referrerDoc.data().balance || 0;
+              await updateDoc(referrerRef, { balance: currentReferrerBalance + 50 });
+              referrerBonusGiven = true;
               await logCommission(referredById, uid, 50, 1, 0);
               showToast(`🎉 Referrer earned 50 bonus coins!`);
             }
           }
         }
         
+        // Create new user with 50 bonus coins
         await setDoc(doc(db, "users", uid), {
-          email: email, displayName: username, balance: signupBonus, totalSpent: 0, totalBets: 0, wins: 0,
+          email: email, displayName: username, balance: 50, totalSpent: 0, totalBets: 0, wins: 0,
           userAvatar: '🐉', jazzcashNum: '', easypaisaNum: '', referralCode: newReferralCode,
           referredBy: referredById, validReferralBonusPaid: false, createdAt: Date.now()
         });
         
-        showToast(`✅ Registration successful! +${signupBonus} bonus coins!`);
+        showToast(`✅ Registration successful! +50 bonus coins! ${referrerBonusGiven ? 'Referrer also got 50 coins!' : ''}`);
         localStorage.removeItem('pendingReferral');
         closeModal('authModal');
       } catch (error) { showToast('❌ Registration failed: ' + error.message); }
@@ -469,7 +538,7 @@
           await saveUserDataToFirestore();
           await signOut(auth);
         }
-        // Switch to Guest mode
+        stopAutoSync();
         currentFirebaseUser = null;
         isGuestMode = true;
         balance = 100;
@@ -498,6 +567,7 @@
     }
     
     window.guestLogin = function() {
+      stopAutoSync();
       currentFirebaseUser = null;
       isGuestMode = true;
       balance = 100;
@@ -527,7 +597,7 @@
       let c = document.getElementById('authButtons');
       if(c) {
         if(currentFirebaseUser) { 
-          c.innerHTML = ''; // No username display - just empty
+          c.innerHTML = '';
         } else { 
           c.innerHTML = '<button class="auth-header-btn" onclick="openModal(\'authModal\')">🔑 Login</button>';
         }
@@ -586,7 +656,7 @@
       } catch (error) { console.error('Error loading user data:', error); }
     }
     
-    // ============ REST OF ORIGINAL GAME CODE (COMPLETELY UNCHANGED) ==========
+    // ============ VIP SYSTEM ==========
     const VIP_LEVELS = [
       { level: 0, required: 0, daily: 5, weekly: 35, monthly: 60 },
       { level: 1, required: 40000, daily: 10, weekly: 70, monthly: 120 },
@@ -1010,19 +1080,18 @@
       drawBird(){let ctx=this.ctx;let bx=this.bird.x,by=this.bird.y,bs=this.bird.size;let rot=Math.min(Math.max(this.bird.vel*3,-25),45)*Math.PI/180;ctx.save();ctx.translate(bx+bs/2,by+bs/2);ctx.rotate(rot);ctx.translate(-(bx+bs/2),-(by+bs/2));ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.ellipse(bx+bs/2,by+bs/2,bs/2,bs/2-3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.ellipse(bx+bs/2-2,by+bs/2-1,9,10,0,0,Math.PI*2);ctx.fill();let wingY=this.wingUp?-8:6;ctx.fillStyle='#d97706';ctx.beginPath();ctx.ellipse(bx+12,by+bs/2+wingY,14,8,-0.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bx+bs-10,by+13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1e293b';ctx.beginPath();ctx.arc(bx+bs-9,by+13,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#78350f';ctx.fillRect(bx+bs-16,by+6,12,2);ctx.fillStyle='#ea580c';ctx.beginPath();ctx.moveTo(bx+bs-5,by+14);ctx.lineTo(bx+bs+5,by+17);ctx.lineTo(bx+bs-5,by+21);ctx.fill();ctx.fillStyle='#b45309';ctx.beginPath();ctx.moveTo(bx+4,by+bs/2);ctx.lineTo(bx-5,by+bs/2+7);ctx.lineTo(bx-5,by+bs/2-7);ctx.fill();ctx.restore();}
     }
     
-    // ============ AUTH STATE HANDLER - NO AUTO-LOGIN ==========
+    // ============ AUTH STATE HANDLER ==========
     onAuthStateChanged(auth, async (user) => {
       if (user && !currentFirebaseUser) {
-        // User logged in manually
         currentFirebaseUser = user;
         isGuestMode = false;
         await loadUserDataFromFirestore(user);
         updateAuthButtons();
         updateUI();
         renderBonusTabContent();
+        startAutoSync(); // Start auto-sync every 3 seconds
       } else if (!user && currentFirebaseUser) {
-        // User logged out - already handled by firebaseLogout
-        // Do nothing here to avoid duplicate guest switch
+        // Already handled by firebaseLogout
       }
     });
     
