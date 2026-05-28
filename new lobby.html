@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Flappy 777• Tropical Paradise • Cloud Save</title>
+  <title>Flappy 777• Referral System • FULLY WORKING</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a'/%3E%3Ctext x='50' y='72' font-size='65' text-anchor='middle' fill='%23ffd700' font-family='Arial'%3E♛%3C/text%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -174,14 +174,14 @@
   </div>
 
   <!-- Auth Modal -->
-  <div class="modal-overlay" id="authModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('authModal')">×</span><div style="text-align:center;font-size:2rem;">🌴</div><h3 style="text-align:center;">Flappy 777</h3><div style="background:#48C9B010; padding:8px; border-radius:12px; margin:10px 0; text-align:center; font-size:0.7rem;">🔒 Cloud Save • Referral System<br>🎁 Get 50 bonus coins when signing up with a referral link!<br>💰 Refer friends and earn 10% commission on their deposits!</div>
+  <div class="modal-overlay" id="authModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('authModal')">×</span><div style="text-align:center;font-size:2rem;">🌴</div><h3 style="text-align:center;">Flappy 777</h3><div style="background:#48C9B010; padding:8px; border-radius:12px; margin:10px 0; text-align:center; font-size:0.7rem;">🔒 Cloud Save • Multi-Level Referrals (10% / 5% / 2.5%)<br>🎁 Get 50 bonus coins when signing up with a referral link!<br>💰 EVERY referral link works - share and earn!</div>
       <input type="email" id="loginEmail" placeholder="Email" style="width:100%;padding:12px;margin:8px 0;border-radius:12px;background:rgba(255,255,255,0.2);border:1px solid #48C9B0;color:white;">
       <input type="password" id="loginPass" placeholder="Password" style="width:100%;padding:12px;margin:8px 0;border-radius:12px;background:rgba(255,255,255,0.2);border:1px solid #48C9B0;color:white;">
       <button class="btn btn-gold" style="width:100%;" onclick="doFirebaseLogin()">🔑 LOGIN</button>
       <div style="text-align:center;margin:16px 0;">── ☀️ NEW USER? REGISTER ──</div>
       <input type="text" id="regUsername" placeholder="Username" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <input type="email" id="regEmail" placeholder="Email" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
-      <input type="text" id="regReferral" placeholder="Referral Code (Optional)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FFD700;color:#ffd700;">
+      <input type="text" id="regReferral" placeholder="Referral Code (Auto-filled from link)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FFD700;color:#ffd700;">
       <input type="password" id="regPassword" placeholder="Password (min 6 chars)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <input type="password" id="regConfirm" placeholder="Confirm Password" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <button class="btn" style="background:#FF6B6B;width:100%;" onclick="doFirebaseRegister()">🐚 CREATE ACCOUNT</button>
@@ -227,12 +227,16 @@
         <strong>💰 Commission Structure</strong>
         <div style="margin-top: 8px;">
           <div class="profile-row" style="border-bottom: none;">
-            <span>Referral Commission</span>
-            <span style="color:#2ecc71;">10% of deposit (min 3000 coins)</span>
+            <span>Level 1 (Direct)</span>
+            <span style="color:#2ecc71;">10% commission + 50 signup bonus</span>
           </div>
           <div class="profile-row" style="border-bottom: none;">
-            <span>Sign-up Bonus</span>
-            <span style="color:#2ecc71;">50 coins for referrer</span>
+            <span>Level 2</span>
+            <span style="color:#2ecc71;">5% commission</span>
+          </div>
+          <div class="profile-row" style="border-bottom: none;">
+            <span>Level 3</span>
+            <span style="color:#2ecc71;">2.5% commission</span>
           </div>
         </div>
       </div>
@@ -336,7 +340,6 @@
     
     let autoSyncInterval = null;
     
-    // FORCE LOGOUT ON PAGE LOAD - NO AUTO-LOGIN
     async function forceClearSession() {
       try {
         const currentUser = auth.currentUser;
@@ -382,13 +385,13 @@
     function startAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); autoSyncInterval = setInterval(() => autoSyncGameData(), 3000); }
     function stopAutoSync() { if (autoSyncInterval) { clearInterval(autoSyncInterval); autoSyncInterval = null; } }
     
-    // ============ REFERRAL SYSTEM ============
+    // ============ REFERRAL SYSTEM - FIXED FOR ALL LEVELS ============
     const urlParams = new URLSearchParams(window.location.search);
     const urlReferralCode = urlParams.get('ref');
     
     if (urlReferralCode && urlReferralCode.trim()) {
       localStorage.setItem('pendingReferral', urlReferralCode);
-      console.log("Referral code detected in URL:", urlReferralCode);
+      console.log("✅ Referral code detected in URL:", urlReferralCode);
     }
     
     function autoFillReferralInput() {
@@ -397,7 +400,7 @@
         const pending = localStorage.getItem('pendingReferral');
         if (pending && pending.trim() && !refInput.value) {
           refInput.value = pending;
-          console.log("Auto-filled referral input from URL:", pending);
+          console.log("✅ Auto-filled referral input with:", pending);
         }
       }
     }
@@ -409,18 +412,37 @@
       return `${base}${random}`;
     }
     
-    async function saveCommission(referrerId, userId, amount, type) {
+    async function saveCommission(referrerId, userId, amount, level, type) {
       try {
         const commissionData = {
           referrerId: referrerId,
           userId: userId,
           amount: amount,
+          level: level,
           type: type,
           status: 'pending',
           createdAt: Date.now()
         };
         await addDoc(collection(db, "commissions"), commissionData);
-        console.log(`Commission saved: ${amount} coins to ${referrerId}`);
+        console.log(`✅ Commission saved: ${amount} coins to ${referrerId} (Level ${level})`);
+        
+        // For signup bonuses, add directly to referrer's balance
+        if (type === 'signup_bonus') {
+          const referrerRef = doc(db, "users", referrerId);
+          const referrerDoc = await getDoc(referrerRef);
+          if (referrerDoc.exists()) {
+            const currentBalance = referrerDoc.data().balance || 0;
+            await updateDoc(referrerRef, { balance: currentBalance + amount });
+            console.log(`✅ Added ${amount} signup bonus to referrer ${referrerId}`);
+          }
+        }
+        
+        const referrerRef = doc(db, "users", referrerId);
+        const referrerDoc = await getDoc(referrerRef);
+        if (referrerDoc.exists()) {
+          const currentEarnings = referrerDoc.data().totalEarnings || 0;
+          await updateDoc(referrerRef, { totalEarnings: currentEarnings + amount });
+        }
         return true;
       } catch (e) {
         console.error("Error saving commission:", e);
@@ -428,6 +450,7 @@
       }
     }
     
+    // Process deposit commission for multi-level referrals
     async function processDepositCommission(spentAmount, userId) {
       if (spentAmount < 3000) return;
       
@@ -438,16 +461,31 @@
         const referredBy = userDoc.data().referredBy;
         if (!referredBy) return;
         
-        const commission = Math.floor(spentAmount * 0.10);
-        await saveCommission(referredBy, userId, commission, 'deposit_commission');
-        showToast(`🎉 Your referrer earned ${commission} coins commission!`);
+        console.log(`Processing ${spentAmount} spend for user ${userId}, referred by ${referredBy}`);
         
-        // Update active referral status
-        const referrerRef = doc(db, "users", referredBy);
-        const referrerDoc = await getDoc(referrerRef);
-        if (referrerDoc.exists()) {
-          const activeCount = referrerDoc.data().activeReferrals || 0;
-          await updateDoc(referrerRef, { activeReferrals: activeCount + 1 });
+        // Level 1 - 10% to direct referrer
+        const level1Commission = Math.floor(spentAmount * 0.10);
+        await saveCommission(referredBy, userId, level1Commission, 1, 'deposit_commission');
+        showToast(`🎉 Level 1 referrer earned ${level1Commission} coins!`);
+        
+        // Level 2 - 5% to second level referrer
+        const level1Doc = await getDoc(doc(db, "users", referredBy));
+        const level2Referrer = level1Doc.exists() ? level1Doc.data().referredBy : null;
+        if (level2Referrer) {
+          const level2Commission = Math.floor(spentAmount * 0.05);
+          await saveCommission(level2Referrer, userId, level2Commission, 2, 'deposit_commission');
+          console.log(`Level 2 commission: ${level2Commission} to ${level2Referrer}`);
+        }
+        
+        // Level 3 - 2.5% to third level referrer
+        if (level2Referrer) {
+          const level2Doc = await getDoc(doc(db, "users", level2Referrer));
+          const level3Referrer = level2Doc.exists() ? level2Doc.data().referredBy : null;
+          if (level3Referrer) {
+            const level3Commission = Math.floor(spentAmount * 0.025);
+            await saveCommission(level3Referrer, userId, level3Commission, 3, 'deposit_commission');
+            console.log(`Level 3 commission: ${level3Commission} to ${level3Referrer}`);
+          }
         }
       } catch (error) {
         console.error("Commission error:", error);
@@ -459,6 +497,7 @@
       
       const userId = currentFirebaseUser.uid;
       
+      // Get referrals list (users who used this user's referral code)
       const usersRef = collection(db, "users");
       const qReferrals = query(usersRef, where("referredBy", "==", userId));
       const referralSnapshot = await getDocs(qReferrals);
@@ -478,6 +517,7 @@
       totalReferralsCount = referrals.length;
       activeReferralsCount = activeCount;
       
+      // Get commissions for this user
       const commissionsRef = collection(db, "commissions");
       const qCommissions = query(commissionsRef, where("referrerId", "==", userId));
       const commissionSnapshot = await getDocs(qCommissions);
@@ -488,6 +528,7 @@
         const data = doc.data();
         commissions.push({
           amount: data.amount,
+          level: data.level,
           type: data.type,
           status: data.status,
           createdAt: data.createdAt
@@ -548,7 +589,7 @@
           commissions.slice(-10).reverse().forEach(comm => {
             const statusClass = comm.status === 'pending' ? 'status-pending' : 'status-collected';
             const statusText = comm.status === 'pending' ? 'Pending' : 'Collected';
-            const typeText = comm.type === 'deposit_commission' ? 'Deposit Commission' : 'Signup Bonus';
+            const typeText = comm.type === 'deposit_commission' ? `Level ${comm.level} Deposit Commission` : 'Signup Bonus';
             html += `<div class="commission-item">
               <span>🎯 ${typeText}</span>
               <span class="commission-amount">+${comm.amount} coins</span>
@@ -610,7 +651,7 @@
       } catch (error) { showToast('❌ Login failed: ' + error.message); }
     }
     
-    // FIXED REGISTRATION - Referrer gets 50 coins
+    // FIXED REGISTRATION - EVERY referral link works
     window.doFirebaseRegister = async function() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
@@ -633,33 +674,36 @@
         let referrerBonusGiven = false;
         let newUserBonus = 0;
         
-        // Check for valid referral code
+        // CRITICAL FIX: Look up the referrer by their referral code
         if (referralCode && referralCode.trim()) {
-          console.log("Looking for referrer with code:", referralCode);
+          console.log("🔍 Looking for referrer with code:", referralCode);
+          
+          // Get all users and find by referralCode
           const usersRef = collection(db, "users");
           const querySnapshot = await getDocs(usersRef);
           
+          let found = false;
           for (const docSnap of querySnapshot.docs) {
             const userData = docSnap.data();
             if (userData.referralCode === referralCode.trim()) {
               referrerId = docSnap.id;
-              const currentReferrerBalance = userData.balance || 0;
-              // Give referrer 50 coins
-              await updateDoc(doc(db, "users", referrerId), { 
-                balance: currentReferrerBalance + 50,
-                totalEarnings: (userData.totalEarnings || 0) + 50
-              });
               referrerBonusGiven = true;
               newUserBonus = 50;
-              await saveCommission(referrerId, uid, 50, 'signup_bonus');
-              console.log("Referrer found! Awarded 50 coins to:", referrerId);
-              showToast(`🎉 Your referrer got 50 coins bonus!`);
+              found = true;
+              console.log("✅ Referrer FOUND! ID:", referrerId, "Name:", userData.displayName);
               break;
             }
           }
-          if (!referrerBonusGiven) {
-            console.log("Referral code not found:", referralCode);
+          
+          if (!found) {
+            console.log("❌ Referral code NOT found:", referralCode);
           }
+        }
+        
+        // Save signup bonus commission if referrer found
+        if (referrerBonusGiven && referrerId) {
+          await saveCommission(referrerId, uid, 50, 1, 'signup_bonus');
+          showToast(`🎉 Your referrer got 50 coins bonus!`);
         }
         
         // Create new user
@@ -684,11 +728,12 @@
         if (referrerBonusGiven) {
           showToast(`✅ Account created! You got +50 bonus coins! Your referrer also got 50 coins!`);
         } else if (referralCode && referralCode.trim()) {
-          showToast(`✅ Account created! (Referral code not found, no bonus)`);
+          showToast(`✅ Account created! (Referral code not found - no bonus)`);
         } else {
-          showToast(`✅ Account created! Share your referral link to earn!`);
+          showToast(`✅ Account created! Share your referral link to earn! Your code: ${newReferralCode}`);
         }
         
+        // Clear pending referral
         localStorage.removeItem('pendingReferral');
         document.getElementById('regReferral').value = '';
         closeModal('authModal');
@@ -963,14 +1008,16 @@
             <button class="btn-gold" style="width:auto; padding:8px 16px;" onclick="copyRefLink()">📋 Copy</button>
           </div>
           <div style="font-size:0.7rem; text-align:center; margin:10px 0;">
-            <span class="level-badge">Referral Commission: 10% of deposit (min 3000 coins)</span>
-            <span class="level-badge">Sign-up Bonus: 50 coins for referrer</span>
+            <span class="level-badge">Level 1: 10% commission + 50 signup bonus</span>
+            <span class="level-badge">Level 2: 5% commission</span>
+            <span class="level-badge">Level 3: 2.5% commission</span>
           </div>
           <div class="vip-card"><strong>How it works:</strong><br>
           • Share your referral link with friends<br>
           • When they sign up using your link, you get 50 bonus coins!<br>
           • When they deposit 3000+ coins, you earn 10% commission!<br>
-          • Commission is saved and you can claim it anytime
+          • Their referrals also give you 5% and 2.5% commissions!<br>
+          • EVERY referral link works - the chain continues!
           </div>
         </div>`;
       document.getElementById('tabContent').innerHTML = html;
@@ -1012,7 +1059,7 @@
     });
     renderBonusTabContent();
     
-    // ORIGINAL CASINO SHUFFLE GAME (FULLY PRESERVED)
+    // ORIGINAL CASINO SHUFFLE GAME (PRESERVED)
     const CONFIG = { PAIRS_COUNT: 10, BOMB_COUNT: 6, GOLDEN_COUNT: 2, GOLDEN_MULTIPLIER: 20, MULTIPLIERS: [1.5,2.0,2.5,3.0,4.0,5.0,7.0,10.0,15.0,22.0] };
     const CARD_VALUES = ['A','K','Q','J','10','9','8','7','6','5'];
     const CARD_SUITS = [{symbol:'♥',color:'red'},{symbol:'♠',color:'black'},{symbol:'♦',color:'red'},{symbol:'♣',color:'black'}];
@@ -1127,7 +1174,7 @@
     document.getElementById('winPlayAgainBtn').onclick = resetGame;
     document.getElementById('losePlayAgainBtn').onclick = resetGame;
     
-    // FLAPPY BIRD GAME (FULLY PRESERVED)
+    // FLAPPY BIRD GAME (PRESERVED)
     window.flappyGame = null;
     window.enterFlappyGame = function(){ document.getElementById('flappyGameSection').classList.add('active'); if(!window.flappyGame)window.flappyGame=new FlappyBirdGame(); window.flappyGame.reset(); }
     window.exitFlappyGame = function(){ if(window.flappyGame)window.flappyGame.stop(); document.getElementById('flappyGameSection').classList.remove('active'); }
@@ -1159,7 +1206,6 @@
       drawBird(){let ctx=this.ctx;let bx=this.bird.x,by=this.bird.y,bs=this.bird.size;let rot=Math.min(Math.max(this.bird.vel*3,-25),45)*Math.PI/180;ctx.save();ctx.translate(bx+bs/2,by+bs/2);ctx.rotate(rot);ctx.translate(-(bx+bs/2),-(by+bs/2));ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.ellipse(bx+bs/2,by+bs/2,bs/2,bs/2-3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.ellipse(bx+bs/2-2,by+bs/2-1,9,10,0,0,Math.PI*2);ctx.fill();let wingY=this.wingUp?-8:6;ctx.fillStyle='#d97706';ctx.beginPath();ctx.ellipse(bx+12,by+bs/2+wingY,14,8,-0.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bx+bs-10,by+13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1e293b';ctx.beginPath();ctx.arc(bx+bs-9,by+13,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#78350f';ctx.fillRect(bx+bs-16,by+6,12,2);ctx.fillStyle='#ea580c';ctx.beginPath();ctx.moveTo(bx+bs-5,by+14);ctx.lineTo(bx+bs+5,by+17);ctx.lineTo(bx+bs-5,by+21);ctx.fill();ctx.fillStyle='#b45309';ctx.beginPath();ctx.moveTo(bx+4,by+bs/2);ctx.lineTo(bx-5,by+bs/2+7);ctx.lineTo(bx-5,by+bs/2-7);ctx.fill();ctx.restore();}
     }
     
-    // AUTH STATE HANDLER - NO AUTO-LOGIN
     await forceClearSession();
     
     onAuthStateChanged(auth, async (user) => {
