@@ -181,7 +181,7 @@
       <div style="text-align:center;margin:16px 0;">── ☀️ NEW USER? REGISTER ──</div>
       <input type="text" id="regUsername" placeholder="Username" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <input type="email" id="regEmail" placeholder="Email" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
-      <input type="text" id="regReferral" placeholder="Referral Code (Optional)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FFD700;color:#ffd700;">
+      <input type="text" id="regReferral" placeholder="Referral Code (Auto-filled from link)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FFD700;color:#ffd700;">
       <input type="password" id="regPassword" placeholder="Password (min 6 chars)" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <input type="password" id="regConfirm" placeholder="Confirm Password" style="width:100%;padding:10px;margin:4px 0;background:rgba(255,255,255,0.2);border-radius:12px;border:1px solid #FF6B6B;color:white;">
       <button class="btn" style="background:#FF6B6B;width:100%;" onclick="doFirebaseRegister()">🐚 CREATE ACCOUNT</button>
@@ -385,26 +385,36 @@
     function startAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); autoSyncInterval = setInterval(() => autoSyncGameData(), 3000); }
     function stopAutoSync() { if (autoSyncInterval) { clearInterval(autoSyncInterval); autoSyncInterval = null; } }
     
-    // ============ REFERRAL SYSTEM ============
+    // ============ REFERRAL SYSTEM - FIXED ============
+    // Get referral code from URL immediately
     const urlParams = new URLSearchParams(window.location.search);
     const urlReferralCode = urlParams.get('ref');
     
     if (urlReferralCode && urlReferralCode.trim()) {
       localStorage.setItem('pendingReferral', urlReferralCode);
-      console.log("Referral code detected in URL:", urlReferralCode);
+      console.log("✅ Referral code detected in URL:", urlReferralCode);
     }
     
+    // Auto-fill the referral input field when modal opens
     function autoFillReferralInput() {
       const refInput = document.getElementById('regReferral');
       if (refInput) {
         const pending = localStorage.getItem('pendingReferral');
-        if (pending && pending.trim() && !refInput.value) {
+        if (pending && pending.trim()) {
           refInput.value = pending;
-          console.log("Auto-filled referral input from URL:", pending);
+          console.log("✅ Auto-filled referral input with:", pending);
         }
       }
     }
-    setTimeout(autoFillReferralInput, 500);
+    
+    // Call auto-fill when modal opens
+    const originalOpenModal = window.openModal;
+    window.openModal = function(id) {
+      document.getElementById(id).classList.add('active');
+      if (id === 'authModal') {
+        setTimeout(autoFillReferralInput, 100);
+      }
+    }
     
     async function generateReferralCode(uid, username) {
       const base = username ? username.substring(0, 5).toUpperCase() : uid.substring(0, 5);
@@ -424,15 +434,16 @@
           createdAt: Date.now()
         };
         await addDoc(collection(db, "commissions"), commissionData);
-        console.log(`Commission saved: ${amount} coins to ${referrerId} (Level ${level})`);
+        console.log(`✅ Commission saved: ${amount} coins to ${referrerId} (Level ${level})`);
         
-        // For signup bonuses, add directly to balance
+        // For signup bonuses, add directly to referrer's balance
         if (type === 'signup_bonus') {
           const referrerRef = doc(db, "users", referrerId);
           const referrerDoc = await getDoc(referrerRef);
           if (referrerDoc.exists()) {
             const currentBalance = referrerDoc.data().balance || 0;
             await updateDoc(referrerRef, { balance: currentBalance + amount });
+            console.log(`✅ Added ${amount} signup bonus to referrer ${referrerId}`);
           }
         }
         
@@ -449,7 +460,6 @@
       }
     }
     
-    // Process deposit commission for multi-level referrals
     async function processDepositCommission(spentAmount, userId) {
       if (spentAmount < 3000) return;
       
@@ -458,35 +468,27 @@
         if (!userDoc.exists()) return;
         
         const referredBy = userDoc.data().referredBy;
-        if (!referredBy) {
-          console.log("No referrer found for user:", userId);
-          return;
-        }
+        if (!referredBy) return;
         
-        console.log(`Processing ${spentAmount} spend for user ${userId}, referred by ${referredBy}`);
-        
-        // Level 1 - 10% to direct referrer
+        // Level 1 - 10%
         const level1Commission = Math.floor(spentAmount * 0.10);
         await saveCommission(referredBy, userId, level1Commission, 1, 'deposit_commission');
-        showToast(`🎉 Level 1 referrer earned ${level1Commission} coins!`);
         
-        // Level 2 - 5% to second level referrer
+        // Level 2 - 5%
         const level1Doc = await getDoc(doc(db, "users", referredBy));
         const level2Referrer = level1Doc.exists() ? level1Doc.data().referredBy : null;
         if (level2Referrer) {
           const level2Commission = Math.floor(spentAmount * 0.05);
           await saveCommission(level2Referrer, userId, level2Commission, 2, 'deposit_commission');
-          console.log(`Level 2 commission: ${level2Commission} to ${level2Referrer}`);
         }
         
-        // Level 3 - 2.5% to third level referrer
+        // Level 3 - 2.5%
         if (level2Referrer) {
           const level2Doc = await getDoc(doc(db, "users", level2Referrer));
           const level3Referrer = level2Doc.exists() ? level2Doc.data().referredBy : null;
           if (level3Referrer) {
             const level3Commission = Math.floor(spentAmount * 0.025);
             await saveCommission(level3Referrer, userId, level3Commission, 3, 'deposit_commission');
-            console.log(`Level 3 commission: ${level3Commission} to ${level3Referrer}`);
           }
         }
       } catch (error) {
@@ -499,7 +501,6 @@
       
       const userId = currentFirebaseUser.uid;
       
-      // Get referrals list (users who used this user's referral code)
       const usersRef = collection(db, "users");
       const qReferrals = query(usersRef, where("referredBy", "==", userId));
       const referralSnapshot = await getDocs(qReferrals);
@@ -519,7 +520,6 @@
       totalReferralsCount = referrals.length;
       activeReferralsCount = activeCount;
       
-      // Get commissions for this user
       const commissionsRef = collection(db, "commissions");
       const qCommissions = query(commissionsRef, where("referrerId", "==", userId));
       const commissionSnapshot = await getDocs(qCommissions);
@@ -546,8 +546,7 @@
       
       const userDoc = await getDoc(doc(db, "users", userId));
       if (userDoc.exists()) {
-        const userData = userDoc.data();
-        totalCommissionEarned = userData.totalEarnings || 0;
+        totalCommissionEarned = userDoc.data().totalEarnings || 0;
       }
       
       updateReferralUI();
@@ -654,14 +653,18 @@
       } catch (error) { showToast('❌ Login failed: ' + error.message); }
     }
     
-    // FIXED: Registration with proper referral chain - EVERY referral link works
+    // FIXED REGISTRATION - Proper referral lookup
     window.doFirebaseRegister = async function() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
       const password = document.getElementById('regPassword').value;
       const confirm = document.getElementById('regConfirm').value;
       let referralCode = document.getElementById('regReferral').value;
-      if (!referralCode) referralCode = localStorage.getItem('pendingReferral');
+      
+      // Also check localStorage for pending referral
+      if (!referralCode || !referralCode.trim()) {
+        referralCode = localStorage.getItem('pendingReferral');
+      }
       
       if (!username) { showToast('Please enter username'); return; }
       if (!email) { showToast('Please enter email'); return; }
@@ -677,31 +680,40 @@
         let referrerBonusGiven = false;
         let newUserBonus = 0;
         
-        // CRITICAL FIX: Look up the referrer by their referral code
+        // FIXED: Look up the referrer by their referral code
         if (referralCode && referralCode.trim()) {
-          console.log("Looking for referrer with code:", referralCode);
+          console.log("🔍 Looking for referrer with code:", referralCode);
+          
+          // Get all users and find by referralCode
           const usersRef = collection(db, "users");
           const querySnapshot = await getDocs(usersRef);
           
+          let found = false;
           for (const docSnap of querySnapshot.docs) {
             const userData = docSnap.data();
             if (userData.referralCode === referralCode.trim()) {
               referrerId = docSnap.id;
               referrerBonusGiven = true;
               newUserBonus = 50;
-              // Save signup bonus commission (Level 1) - this gives 50 coins to referrer
-              await saveCommission(referrerId, uid, 50, 1, 'signup_bonus');
-              console.log("Referrer found! Awarded 50 coins to:", referrerId);
-              showToast(`🎉 Your referrer got 50 coins bonus!`);
+              found = true;
+              console.log("✅ Referrer FOUND! ID:", referrerId, "Name:", userData.displayName);
               break;
             }
           }
-          if (!referrerBonusGiven) {
-            console.log("Referral code not found:", referralCode);
+          
+          if (!found) {
+            console.log("❌ Referral code NOT found:", referralCode);
+            showToast(`⚠️ Referral code "${referralCode}" not found. No bonus applied.`);
           }
         }
         
-        // Create new user with their own referral code
+        // Save signup bonus commission if referrer found
+        if (referrerBonusGiven && referrerId) {
+          await saveCommission(referrerId, uid, 50, 1, 'signup_bonus');
+          showToast(`🎉 Your referrer got 50 coins bonus!`);
+        }
+        
+        // Create new user
         await setDoc(doc(db, "users", uid), {
           email: email, 
           displayName: username, 
@@ -723,11 +735,12 @@
         if (referrerBonusGiven) {
           showToast(`✅ Account created! You got +50 bonus coins! Your referrer also got 50 coins!`);
         } else if (referralCode && referralCode.trim()) {
-          showToast(`✅ Account created! (Referral code not found, no bonus)`);
+          showToast(`✅ Account created! (Referral code not found - no bonus)`);
         } else {
-          showToast(`✅ Account created! Share your referral link to earn! Your referral code is: ${newReferralCode}`);
+          showToast(`✅ Account created! Share your referral link to earn! Your code: ${newReferralCode}`);
         }
         
+        // Clear pending referral
         localStorage.removeItem('pendingReferral');
         document.getElementById('regReferral').value = '';
         closeModal('authModal');
@@ -925,7 +938,7 @@
     function validatePakNumber(num) { if(!num) return false; let c = num.toString().trim(); return c.length === 11 && c.startsWith('03') && /^\d+$/.test(c); }
     const avatars = ['🐉','🐱','🐶','🦁','🐸','🐼','🐨','🦊'];
     
-    window.openModal = function(id) { document.getElementById(id).classList.add('active'); }
+    // UI FUNCTIONS
     window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
     window.openFullscreen = function(id) { document.getElementById(id).classList.add('active'); }
     window.closeFullscreen = function(id) { document.getElementById(id).classList.remove('active'); }
@@ -1199,8 +1212,10 @@
       drawBird(){let ctx=this.ctx;let bx=this.bird.x,by=this.bird.y,bs=this.bird.size;let rot=Math.min(Math.max(this.bird.vel*3,-25),45)*Math.PI/180;ctx.save();ctx.translate(bx+bs/2,by+bs/2);ctx.rotate(rot);ctx.translate(-(bx+bs/2),-(by+bs/2));ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.ellipse(bx+bs/2,by+bs/2,bs/2,bs/2-3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.ellipse(bx+bs/2-2,by+bs/2-1,9,10,0,0,Math.PI*2);ctx.fill();let wingY=this.wingUp?-8:6;ctx.fillStyle='#d97706';ctx.beginPath();ctx.ellipse(bx+12,by+bs/2+wingY,14,8,-0.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bx+bs-10,by+13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1e293b';ctx.beginPath();ctx.arc(bx+bs-9,by+13,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#78350f';ctx.fillRect(bx+bs-16,by+6,12,2);ctx.fillStyle='#ea580c';ctx.beginPath();ctx.moveTo(bx+bs-5,by+14);ctx.lineTo(bx+bs+5,by+17);ctx.lineTo(bx+bs-5,by+21);ctx.fill();ctx.fillStyle='#b45309';ctx.beginPath();ctx.moveTo(bx+4,by+bs/2);ctx.lineTo(bx-5,by+bs/2+7);ctx.lineTo(bx-5,by+bs/2-7);ctx.fill();ctx.restore();}
     }
     
+    // Force clear any existing session on load
     await forceClearSession();
     
+    // Set up auth listener - NO AUTO-LOGIN
     onAuthStateChanged(auth, async (user) => {
       if (user && !currentFirebaseUser) {
         currentFirebaseUser = user;
@@ -1212,6 +1227,9 @@
         startAutoSync();
       } else if (!user && currentFirebaseUser) {
         currentFirebaseUser = null;
+      } else if (!user && !currentFirebaseUser) {
+        // Already in guest mode, do nothing
+        console.log("No user logged in - guest mode");
       }
     });
     
