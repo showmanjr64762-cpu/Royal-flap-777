@@ -294,6 +294,9 @@
     const auth = firebase.auth();
     const database = firebase.database();
 
+    // Set persistence to NONE - never remember user
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
+
     // ===== GLOBAL VARIABLES =====
     let currentFirebaseUser = null;
     let isGuestMode = true;
@@ -342,7 +345,7 @@
           console.log("Cleared existing session");
         }
       } catch(e) {
-        console.log("No session to clear");
+        console.log("No session to clear:", e);
       }
     }
 
@@ -613,7 +616,7 @@
       showToast('✅ Referral link copied! Share with friends!');
     }
     
-    // ===== AUTH FUNCTIONS - REAL FIREBASE ACCOUNTS =====
+    // ===== AUTH FUNCTIONS - NO AUTO-LOGIN =====
     window.doFirebaseLogin = async function() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPass').value;
@@ -625,7 +628,7 @@
       } catch (error) { showToast('❌ Login failed: ' + error.message); }
     }
     
-    // FIXED REGISTRATION - Creates REAL Firebase account
+    // REGISTRATION - Creates REAL Firebase account
     window.doFirebaseRegister = async function() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
@@ -1075,7 +1078,7 @@
     }
     
     // ===== UI FUNCTIONS =====
-    window.openModal = function(id) { document.getElementById(id).classList.add('active'); }
+    window.openModal = function(id) { document.getElementById(id).classList.add('active'); if(id === 'authModal') setTimeout(autoFillReferralInput, 100); }
     window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
     window.openFullscreen = function(id) { document.getElementById(id).classList.add('active'); }
     window.closeFullscreen = function(id) { document.getElementById(id).classList.remove('active'); }
@@ -1260,7 +1263,7 @@
       if (fill) fill.style.width = Math.min(progress, 100) + '%';
     }, 100);
     
-    // ===== AUTH STATE HANDLER - NO AUTO-LOGIN =====
+    // ===== AUTH STATE HANDLER - FORCE CLEAR AND NO AUTO-LOGIN =====
     forceClearSession().then(() => {
       auth.onAuthStateChanged(async (user) => {
         if (user && !currentFirebaseUser) {
@@ -1274,6 +1277,10 @@
           currentFirebaseUser = null;
         } else if (!user && !currentFirebaseUser) {
           console.log("No user logged in - guest mode");
+          // Ensure guest mode is active with 0 coins
+          if (isGuestMode && balance === 0) {
+            // Already in correct state
+          }
         }
       });
     });
