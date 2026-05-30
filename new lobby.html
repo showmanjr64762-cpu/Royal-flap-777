@@ -328,11 +328,12 @@
       return n.toString(); 
     }
 
-    // ===== FORCE CLEAR SESSION ON LOAD =====
+    // ===== FORCE CLEAR SESSION ON LOAD - NO AUTO-LOGIN =====
     async function forceClearSession() {
       try {
         const currentUser = auth.currentUser;
         if (currentUser) {
+          console.log("Found existing session, signing out...");
           await auth.signOut();
           console.log("Cleared existing session");
         }
@@ -341,7 +342,7 @@
       }
     }
 
-    // ===== REFERRAL SYSTEM - WORKING WITH INSTANT BONUS =====
+    // ===== REFERRAL SYSTEM =====
     const urlParams = new URLSearchParams(window.location.search);
     const urlReferralCode = urlParams.get('ref');
     
@@ -396,6 +397,7 @@
             if (currentFirebaseUser && currentFirebaseUser.uid === referrerId) {
               balance = currentBalance + amount;
               updateUI();
+              showToast(`🎉 You got 50 coins referral bonus! Someone signed up using your link!`);
             }
           }
         }
@@ -414,7 +416,6 @@
       }
     }
     
-    // Process deposit commission for multi-level referrals
     async function processDepositCommission(spentAmount, userId) {
       if (spentAmount < 3000) return;
       
@@ -428,11 +429,9 @@
         
         console.log(`Processing ${spentAmount} spend for user ${userId}, referred by ${referredBy}`);
         
-        // Level 1 - 10% to direct referrer
         const level1Commission = Math.floor(spentAmount * 0.10);
         await saveCommission(referredBy, userId, level1Commission, 1, 'deposit_commission');
         
-        // Level 2 - 5% to second level referrer
         const level1Snapshot = await database.ref('users/' + referredBy).once('value');
         const level1Data = level1Snapshot.val();
         const level2Referrer = level1Data ? level1Data.referredBy : null;
@@ -441,7 +440,6 @@
           await saveCommission(level2Referrer, userId, level2Commission, 2, 'deposit_commission');
         }
         
-        // Level 3 - 2.5% to third level referrer
         if (level2Referrer) {
           const level2Snapshot = await database.ref('users/' + level2Referrer).once('value');
           const level2Data = level2Snapshot.val();
@@ -461,7 +459,6 @@
       
       const userId = currentFirebaseUser.uid;
       
-      // Get referrals list (users who used this user's referral code)
       const usersSnapshot = await database.ref('users').once('value');
       const users = usersSnapshot.val();
       referrals = [];
@@ -482,7 +479,6 @@
       totalReferralsCount = referrals.length;
       activeReferralsCount = activeCount;
       
-      // Get commissions for this user
       const commissionsSnapshot = await database.ref('commissions').once('value');
       const commissionsData = commissionsSnapshot.val();
       commissions = [];
@@ -511,7 +507,6 @@
       pendingCommission = pending;
       totalCommissionEarned = total;
       
-      // Get user data for total earnings
       const userSnapshot = await database.ref('users/' + userId).once('value');
       const userData = userSnapshot.val();
       if (userData) {
@@ -1260,7 +1255,7 @@
       if (fill) fill.style.width = Math.min(progress, 100) + '%';
     }, 100);
     
-    // ===== AUTH STATE HANDLER =====
+    // ===== AUTH STATE HANDLER - NO AUTO-LOGIN =====
     forceClearSession().then(() => {
       auth.onAuthStateChanged(async (user) => {
         if (user && !currentFirebaseUser) {
@@ -1272,6 +1267,8 @@
           renderBonusTabContent();
         } else if (!user && currentFirebaseUser) {
           currentFirebaseUser = null;
+        } else if (!user && !currentFirebaseUser) {
+          console.log("No user logged in - guest mode");
         }
       });
     });
