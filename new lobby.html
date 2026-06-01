@@ -609,7 +609,7 @@
       } catch (error) { showToast('❌ Login failed: ' + error.message); }
     }
     
-    // FIXED REGISTRATION - GIVES 50 COINS TO REFERRER INSTANTLY
+    // FIXED REGISTRATION - PROPERLY STORES USER IN FIREBASE
     window.doFirebaseRegister = async function() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
@@ -624,6 +624,7 @@
       if (password !== confirm) { showToast('Passwords do not match'); return; }
       
       try {
+        // Create Firebase Auth user
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const uid = userCredential.user.uid;
         const newReferralCode = await generateReferralCode(uid, username);
@@ -638,44 +639,47 @@
           const usersSnapshot = await database.ref('users').once('value');
           const users = usersSnapshot.val();
           
-          for (const id in users) {
-            const userData = users[id];
-            if (userData.referralCode === referralCode.trim()) {
-              referrerId = id;
-              const currentReferrerBalance = userData.coins || 0;
-              const currentReferrerEarnings = userData.referralEarnings || 0;
-              const currentReferralCount = userData.totalReferrals || 0;
-              
-              // GIVE REFERRER 50 COINS INSTANTLY - DIRECT BALANCE UPDATE
-              await database.ref('users/' + referrerId).update({ 
-                coins: currentReferrerBalance + 50,
-                referralEarnings: currentReferrerEarnings + 50,
-                totalReferrals: currentReferralCount + 1
-              });
-              
-              referrerBonusGiven = true;
-              newUserBonus = 50;
-              
-              // Save to commissions for tracking
-              await database.ref('commissions').push().set({
-                referrerId: referrerId,
-                userId: uid,
-                amount: 50,
-                level: 1,
-                type: 'signup_bonus',
-                status: 'collected',
-                createdAt: Date.now()
-              });
-              
-              console.log("✅ Referrer found! Awarded 50 coins instantly to:", referrerId);
-              
-              // If the referrer is currently logged in, update their balance in real-time
-              if (currentFirebaseUser && currentFirebaseUser.uid === referrerId) {
-                balance = currentReferrerBalance + 50;
-                updateUI();
-                showToast(`🎉 You got 50 coins referral bonus! Someone signed up using your link!`);
+          if (users) {
+            for (const id in users) {
+              const userData = users[id];
+              if (userData.referralCode === referralCode.trim()) {
+                referrerId = id;
+                const currentReferrerBalance = userData.coins || 0;
+                const currentReferrerEarnings = userData.referralEarnings || 0;
+                const currentReferralCount = userData.totalReferrals || 0;
+                
+                // GIVE REFERRER 50 COINS INSTANTLY
+                await database.ref('users/' + referrerId).update({ 
+                  coins: currentReferrerBalance + 50,
+                  referralEarnings: currentReferrerEarnings + 50,
+                  totalReferrals: currentReferralCount + 1
+                });
+                
+                referrerBonusGiven = true;
+                newUserBonus = 50;
+                
+                // Save to commissions for tracking
+                const commissionRef = database.ref('commissions').push();
+                await commissionRef.set({
+                  referrerId: referrerId,
+                  userId: uid,
+                  amount: 50,
+                  level: 1,
+                  type: 'signup_bonus',
+                  status: 'collected',
+                  createdAt: Date.now()
+                });
+                
+                console.log("✅ Referrer found! Awarded 50 coins instantly to:", referrerId);
+                
+                // If the referrer is currently logged in, update their balance in real-time
+                if (currentFirebaseUser && currentFirebaseUser.uid === referrerId) {
+                  balance = currentReferrerBalance + 50;
+                  updateUI();
+                  showToast(`🎉 You got 50 coins referral bonus! Someone signed up using your link!`);
+                }
+                break;
               }
-              break;
             }
           }
           if (!referrerBonusGiven) {
@@ -683,8 +687,8 @@
           }
         }
         
-        // Create new user
-        await database.ref('users/' + uid).set({
+        // Create user data in Realtime Database
+        const userData = {
           username: username,
           email: email,
           coins: newUserBonus,
@@ -697,8 +701,12 @@
           referralEarnings: 0,
           totalReferrals: 0,
           activeReferrals: 0,
-          createdAt: Date.now()
-        });
+          createdAt: Date.now(),
+          lastUpdated: Date.now()
+        };
+        
+        await database.ref('users/' + uid).set(userData);
+        console.log("✅ User data saved to Firebase:", userData);
         
         if (referrerBonusGiven) {
           showToast(`✅ Account created! You got +50 bonus coins! Your referrer also got 50 coins instantly!`);
