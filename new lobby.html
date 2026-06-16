@@ -644,8 +644,9 @@
             width: 100%;
         }
         @media (max-width: 768px) { .lobby-content { grid-template-columns: 1fr; } }
+        .games-section { display: flex; flex-direction: column; gap: 0.8rem; }
         .section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; background: linear-gradient(135deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; max-width: 100%; width: 100%; }
         .game-tile {
             background: linear-gradient(145deg, rgba(25,25,40,0.9), rgba(15,15,25,0.95));
             border: 1px solid rgba(212,175,55,0.2);
@@ -656,8 +657,11 @@
             align-items: center;
             gap: 0.6rem;
             cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .game-tile:active { transform: translateY(-3px); border-color: #d4af37; }
+        .game-tile:active { transform: translateY(-3px); border-color: #d4af37; box-shadow: 0 10px 25px rgba(212,175,55,0.1); }
         .game-icon {
             width: 70px;
             height: 70px;
@@ -668,8 +672,20 @@
             justify-content: center;
             font-size: 2rem;
             border: 2px solid rgba(212,175,55,0.3);
+            position: relative;
         }
-        .game-tile.hot .game-icon::after { content: '🔥'; position: absolute; top: -5px; right: -5px; font-size: 0.9rem; }
+        .game-tile.hot .game-icon::after {
+            content: '🔥';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.9rem;
+            animation: burn 1s infinite alternate;
+        }
+        @keyframes burn { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+        .game-name { font-weight: 700; font-size: 0.9rem; background: linear-gradient(135deg, #fff, #ddd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
+        .game-stats { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.65rem; color: #d4af37; }
+        .entry-fee { background: rgba(0,0,0,0.4); padding: 0.2rem 0.6rem; border-radius: 10px; border: 1px solid rgba(212,175,55,0.2); color: #d4af37; }
         .play-btn {
             background: linear-gradient(145deg, #d4af37, #9b59b6);
             color: #000;
@@ -680,6 +696,7 @@
             font-size: 0.75rem;
             cursor: pointer;
             width: 100%;
+            text-transform: uppercase;
         }
 
         .leaderboard-panel {
@@ -689,8 +706,37 @@
             padding: 0.8rem;
             height: fit-content;
         }
+        .leaderboard-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(212,175,55,0.2); color: #d4af37; font-size: 0.9rem; }
         .leaderboard-list { display: flex; flex-direction: column; gap: 0.5rem; }
         .leaderboard-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem; background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .rank-number {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.05);
+        }
+        .rank-number.gold { background: linear-gradient(145deg, #d4af37, #b8962e); color: #000; }
+        .rank-number.silver { background: linear-gradient(145deg, #c0c0c0, #808080); color: #000; }
+        .rank-number.bronze { background: linear-gradient(145deg, #cd7f32, #8b4513); color: #fff; }
+        .leader-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(145deg, #1a1a2a, #0f0f1a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            border: 1px solid rgba(212,175,55,0.3);
+        }
+        .leader-info { flex: 1; }
+        .leader-name { font-weight: 600; font-size: 0.7rem; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .leader-win { font-size: 0.6rem; color: #d4af37; }
 
         .bottom-nav {
             background: linear-gradient(180deg, rgba(20,20,35,0.98), rgba(10,10,20,0.99));
@@ -709,10 +755,11 @@
             color: rgba(255,255,255,0.4);
             background: none;
             border: none;
+            transition: all 0.3s;
         }
         .nav-item.active { color: #d4af37; }
         .nav-icon { font-size: 1.2rem; }
-        .nav-label { font-size: 0.5rem; font-weight: 600; }
+        .nav-label { font-size: 0.5rem; font-weight: 600; text-transform: uppercase; }
 
         .game-view {
             position: fixed;
@@ -740,9 +787,32 @@
             font-size: 0.7rem;
         }
         .game-screen { max-width: 550px; margin: 0 auto; padding: 4rem 0.8rem 1.5rem; }
-        .balance-bar, .stats-panel { margin-bottom: 0.5rem; }
-        .stats-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
-        .stat-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.1); border-radius: 10px; padding: 0.4rem; text-align: center; }
+        .game-header { text-align: center; margin-bottom: 1rem; }
+        .game-header h1 { background: linear-gradient(135deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.5rem; }
+        .balance-bar {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        .stats-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; margin-bottom: 0.5rem; }
+        .stat-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(212,175,55,0.1);
+            border-radius: 10px;
+            padding: 0.4rem;
+            text-align: center;
+        }
+        .stat-label { font-size: 0.45rem; color: #666; text-transform: uppercase; margin-bottom: 0.1rem; }
+        .stat-value { font-size: 0.8rem; font-weight: 700; color: #fff; }
+        .stat-value.win { color: #2ecc71; }
+        .stat-value.multiplier { color: #e74c3c; }
+        .stat-value.pairs { color: #d4af37; }
+
         .bet-panel {
             background: rgba(0,0,0,0.4);
             border: 1px solid rgba(212,175,55,0.1);
@@ -750,7 +820,9 @@
             padding: 0.8rem;
             margin-bottom: 0.5rem;
         }
-        .bet-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .bet-panel-title { color: #888; font-size: 0.55rem; text-transform: uppercase; text-align: center; margin-bottom: 0.5rem; }
+        .bet-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
+        @media (max-width: 480px) { .bet-options { grid-template-columns: repeat(2, 1fr); } }
         .bet-option {
             background: rgba(0,0,0,0.4);
             border: 1px solid rgba(212,175,55,0.2);
@@ -761,8 +833,10 @@
             font-weight: 600;
             cursor: pointer;
             text-align: center;
+            transition: all 0.3s;
         }
-        .bet-option.selected { background: linear-gradient(145deg, #d4af37, #9b59b6); color: #000; }
+        .bet-option.selected { background: linear-gradient(145deg, #d4af37, #9b59b6); border-color: #d4af37; color: #000; }
+
         .action-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 0.5rem; }
         .action-btn {
             flex: 1;
@@ -774,21 +848,33 @@
             text-transform: uppercase;
             border: none;
             max-width: 120px;
+            transition: all 0.3s;
         }
         .start-btn { background: linear-gradient(145deg, #2ecc71, #27ae60); color: #fff; }
-        .cashout-btn { background: linear-gradient(145deg, #d4af37, #e67e22); color: #000; }
+        .cashout-btn { background: linear-gradient(145deg, #d4af37, #e67e22); color: #000; animation: pulse-gold 1s infinite; }
         .continue-btn { background: linear-gradient(145deg, #3498db, #2980b9); color: #fff; }
-        .hidden { display: none !important; }
+        @keyframes pulse-gold { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+
+        .message-display { text-align: center; padding: 0.4rem; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 0.5rem; }
+        .message-text { color: #888; font-size: 0.65rem; }
 
         .card-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; perspective: 1000px; margin-bottom: 0.5rem; }
+        @media (max-width: 480px) { .card-grid { gap: 2px; } }
+
         .card {
             aspect-ratio: 2.5 / 3.5;
             position: relative;
             cursor: pointer;
             transform-style: preserve-3d;
-            transition: transform 0.3s;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card.flipped { transform: rotateY(180deg); }
+        .card.matched { animation: match-glow 0.3s ease-out; }
+        @keyframes match-glow {
+            0% { transform: rotateY(180deg) scale(1); box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+            50% { transform: rotateY(180deg) scale(1.05); box-shadow: 0 0 20px 5px rgba(46,204,113,0.5); }
+            100% { transform: rotateY(180deg) scale(1); box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+        }
         .card-face {
             position: absolute;
             inset: 0;
@@ -797,20 +883,53 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
         .card-back {
             background: linear-gradient(145deg, #1a1a2a, #0f0f1a);
             border: 1px solid rgba(212,175,55,0.3);
         }
+        .card-back-pattern {
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(212,175,55,0.1);
+            border-radius: 4px;
+            background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(212,175,55,0.03) 3px, rgba(212,175,55,0.03) 6px);
+        }
+        .card-back-logo { font-family: 'Playfair Display', serif; font-size: 0.7rem; font-weight: 800; background: linear-gradient(135deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; z-index: 1; }
         .card-front {
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border: 1px solid #ddd;
             transform: rotateY(180deg);
             flex-direction: column;
+            padding: 3px;
         }
+        .card-front.red { border-color: #e74c3c; }
+        .card-front.black { border-color: #1a1a1a; }
+        .card-front.bomb {
+            background: linear-gradient(145deg, #2a0a0a, #1a0505);
+            border-color: #e74c3c;
+        }
+        .card-front.golden {
+            background: linear-gradient(145deg, #d4af37, #f39c12);
+            border: 2px solid #fff;
+        }
+        .card-corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; font-weight: 900; }
+        .card-corner-tl { top: 3px; left: 4px; }
+        .card-corner-br { bottom: 3px; right: 4px; transform: rotate(180deg); }
+        .card-rank { font-family: 'Playfair Display', serif; font-size: 0.8rem; font-weight: 900; line-height: 1; margin-bottom: 1px; }
+        .card-suit-small { font-size: 0.65rem; }
         .card-front.red .card-rank { color: #e74c3c; }
         .card-front.black .card-rank { color: #0a0a0a; }
-        .card-front.bomb { background: linear-gradient(145deg, #2a0a0a, #1a0505); }
-        .card-front.golden { background: linear-gradient(145deg, #d4af37, #f39c12); }
+        .card-center { font-size: 1.4rem; }
+        .bomb-content { display: flex; flex-direction: column; align-items: center; color: #e74c3c; }
+        .bomb-icon { font-size: 1.5rem; animation: bomb-pulse 1s infinite; }
+        @keyframes bomb-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .bomb-text { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.1em; margin-top: 3px; text-transform: uppercase; }
+        .golden-content { display: flex; flex-direction: column; align-items: center; color: #000; }
+        .golden-icon { font-size: 1.5rem; animation: crown-glow 1s infinite; }
+        .golden-text { font-size: 0.55rem; font-weight: 900; letter-spacing: 0.08em; margin-top: 3px; text-transform: uppercase; color: #5c4300; }
+        @keyframes crown-glow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
         .win-overlay, .lose-overlay {
             position: fixed;
@@ -826,7 +945,114 @@
             transition: all 0.3s;
         }
         .win-overlay.active, .lose-overlay.active { opacity: 1; visibility: visible; }
+        .win-amount { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; color: #2ecc71; margin: 1rem 0; animation: winPulse 0.5s ease-out; }
+        @keyframes winPulse { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .win-label { color: #888; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; }
+        .lose-icon { font-size: 2.5rem; margin-bottom: 1rem; animation: bombExplode 0.5s ease-out; }
+        @keyframes bombExplode { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        .lose-text { color: #e74c3c; font-size: 1.3rem; font-weight: 800; }
+        .play-again-btn {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(145deg, #d4af37, #e67e22);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
 
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,20,0.95);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(145deg, rgba(25,25,40,0.98), rgba(15,15,25,0.99));
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(212,175,55,0.2); }
+        .modal-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; background: linear-gradient(135deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .modal-close { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; }
+        .settings-option { background: rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.1); border-radius: 12px; padding: 0.8rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .settings-label { display: flex; align-items: center; gap: 0.75rem; color: #fff; font-weight: 600; font-size: 0.85rem; }
+        .settings-icon { font-size: 1.2rem; }
+        .toggle-switch {
+            width: 45px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle-switch.active { background: #d4af37; }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active::after { left: 24px; }
+        .theme-selector { margin-top: 1rem; display: none; }
+        .theme-selector.active { display: block; }
+        .theme-btn {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 0.5rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .theme-btn.active { border-color: #d4af37; background: rgba(212,175,55,0.1); }
+        .theme-preview { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #fff; }
+        .change-theme-btn {
+            width: 100%;
+            padding: 0.7rem;
+            background: linear-gradient(145deg, #d4af37, #9b59b6);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .hidden { display: none !important; }
+        .download-link-container { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; }
+        .copy-link-btn {
+            background: linear-gradient(145deg, #d4af37, #9b59b6);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* ===== ORIGINAL FLAPPY CHECKPOINT GAME STYLES ===== */
         .flappy-overlay {
             position: fixed;
             inset: 0;
@@ -852,6 +1078,7 @@
             height: 100%;
             object-fit: contain;
             cursor: pointer;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
         }
         .flappy-back-btn {
             position: fixed;
@@ -866,7 +1093,12 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 14px;
+            font-family: 'Orbitron', monospace;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
+        .flappy-back-btn:active { transform: scale(0.95); }
+        
         .flappy-bet-overlay {
             position: fixed;
             top: 0;
@@ -887,6 +1119,27 @@
             width: 85%;
             max-width: 380px;
             text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,215,0,0.2);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .flappy-bet-panel h2 {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 26px;
+            margin-bottom: 8px;
+            font-family: 'Playfair Display', serif;
+        }
+        .flappy-balance-display {
+            background: rgba(0,0,0,0.5);
+            border-radius: 40px;
+            padding: 10px 20px;
+            margin: 12px 0 20px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffd700;
+            display: inline-block;
+            font-family: 'Orbitron', monospace;
             border: 1px solid rgba(255,215,0,0.3);
         }
         .flappy-bet-buttons-grid {
@@ -904,7 +1157,10 @@
             font-weight: bold;
             color: #ffd700;
             cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
         }
+        .flappy-bet-btn:active { transform: scale(0.95); background: linear-gradient(145deg, #ffd700, #b8962e); color: #000; }
         .flappy-confirm-btn {
             background: linear-gradient(145deg, #ffd700, #e67e22);
             padding: 14px;
@@ -916,7 +1172,12 @@
             color: #000;
             width: 80%;
             cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            transition: transform 0.2s;
         }
+        .flappy-confirm-btn:active { transform: scale(0.97); }
+        .flappy-info-text { font-size: 11px; color: #b9e6ff; margin-top: 15px; font-family: monospace; }
+        
         .flappy-action-popup {
             position: fixed;
             top: 50%;
@@ -929,7 +1190,19 @@
             z-index: 10003;
             width: 320px;
             border: 2px solid #ffd700;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(255,215,0,0.3);
+            backdrop-filter: blur(10px);
         }
+        .flappy-action-popup h3 { 
+            font-size: 28px; 
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+        .flappy-checkpoint-label { font-size: 14px; color: #ffb347; margin-bottom: 5px; letter-spacing: 2px; font-family: monospace; }
+        .flappy-win-amount { font-size: 42px; font-weight: bold; color: #2dd4bf; margin: 12px 0; font-family: 'Orbitron', monospace; text-shadow: 0 0 10px rgba(45,212,191,0.5); }
         .flappy-action-btns { display: flex; gap: 15px; justify-content: center; margin: 20px 0 12px; }
         .flappy-cashout-btn, .flappy-continue-btn {
             border: none;
@@ -938,51 +1211,14 @@
             font-weight: bold;
             border-radius: 40px;
             cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            transition: transform 0.2s;
         }
-        .flappy-cashout-btn { background: linear-gradient(145deg, #10b981, #059669); color: white; }
-        .flappy-continue-btn { background: linear-gradient(145deg, #f59e0b, #d97706); color: #2c1a00; }
-        .flappy-timer-text { font-size: 22px; background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 50px; margin-top: 12px; color: #facc15; font-weight: bold; }
+        .flappy-cashout-btn:active, .flappy-continue-btn:active { transform: scale(0.95); }
+        .flappy-cashout-btn { background: linear-gradient(145deg, #10b981, #059669); color: white; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+        .flappy-continue-btn { background: linear-gradient(145deg, #f59e0b, #d97706); color: #2c1a00; box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
+        .flappy-timer-text { font-size: 22px; background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 50px; margin-top: 12px; color: #facc15; font-weight: bold; font-family: 'Orbitron', monospace; }
 
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10,10,20,0.95);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-content {
-            background: linear-gradient(145deg, rgba(25,25,40,0.98), rgba(15,15,25,0.99));
-            border: 1px solid rgba(212,175,55,0.3);
-            border-radius: 20px;
-            padding: 1.5rem;
-            max-width: 400px;
-            width: 90%;
-        }
-        .toggle-switch {
-            width: 45px;
-            height: 24px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-        }
-        .toggle-switch.active { background: #d4af37; }
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: #fff;
-            border-radius: 50%;
-            top: 3px;
-            left: 3px;
-            transition: all 0.3s;
-        }
-        .toggle-switch.active::after { left: 24px; }
         .support-btn {
             width: 100%;
             padding: 0.9rem;
@@ -1001,6 +1237,7 @@
         .stat-item { text-align: center; }
         .flappy-info-text { font-size: 11px; color: #b9e6ff; margin-top: 15px; }
         .flappy-balance-display { background: rgba(0,0,0,0.5); border-radius: 40px; padding: 10px 20px; display: inline-block; margin: 12px 0; }
+        .leaderboard-hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -1017,7 +1254,7 @@
         </div>
     </div>
 
-    <!-- Auth Modal - Login on top, Register below -->
+    <!-- Auth Modal -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-container">
             <button class="close-auth" onclick="window.closeAuth()">×</button>
@@ -1027,7 +1264,6 @@
                 <div class="auth-subtitle">Login to your account</div>
             </div>
             <div class="auth-content">
-                <!-- LOGIN SECTION -->
                 <div id="loginSection">
                     <div id="loginErrors" class="error-message"></div>
                     <div class="form-group">
@@ -1043,7 +1279,6 @@
 
                 <div class="auth-divider"><span>OR</span></div>
 
-                <!-- REGISTER SECTION -->
                 <div id="registerSection">
                     <div style="text-align:center;margin-bottom:1rem;color:#888;font-size:0.9rem;">Create a new account</div>
                     <div id="registerErrors" class="error-message"></div>
@@ -1073,7 +1308,6 @@
 
                 <div class="auth-divider"><span>OR</span></div>
 
-                <!-- GUEST BUTTON -->
                 <button class="guest-btn" onclick="window.guestLogin()"><span>👤</span><span>Continue as Guest (0 coins)</span></button>
             </div>
         </div>
@@ -1140,8 +1374,8 @@
         <div class="popup-content">
             <div class="popup-icon">💸</div>
             <div class="popup-title">Withdraw Funds</div>
-            <div class="popup-text">Available Balance: <strong id="withdrawBalance">0</strong> coins<br>Minimum withdrawal: 1000 coins</div>
-            <input type="number" id="withdrawAmount" class="form-input" placeholder="Amount" min="1000">
+            <div class="popup-text">Available Balance: <strong id="withdrawBalance">0</strong> coins<br>Min withdrawal: 100 coins | Max: 49000 coins</div>
+            <input type="number" id="withdrawAmount" class="form-input" placeholder="Amount" min="100" max="49000">
             <div class="popup-btn-group">
                 <button class="popup-btn popup-btn-confirm" onclick="window.processWithdraw()">Request Withdrawal</button>
                 <button class="popup-btn popup-btn-cancel" onclick="window.closeWithdrawPopup()">Cancel</button>
@@ -1298,15 +1532,14 @@
             <span class="fullscreen-title">🎧 Support</span>
         </div>
         <div class="fullscreen-content">
-            <button class="support-btn" onclick="window.openSupportBot()">💬 Open AI Support Chat</button>
-            <button class="support-btn" onclick="window.openAdditionalSupport()">📝 Additional Support</button>
+            <button class="support-btn" onclick="window.openAdditionalSupport()">📝 Contact Support</button>
         </div>
     </div>
 
     <div class="fullscreen-section" id="additionalSupportSection">
         <div class="fullscreen-header">
             <button class="back-btn" onclick="window.closeAdditionalSupport()">← Back</button>
-            <span class="fullscreen-title">📝 Additional Support</span>
+            <span class="fullscreen-title">📝 Contact Support</span>
         </div>
         <div class="fullscreen-content">
             <textarea id="supportMessage" class="form-input" placeholder="Describe your issue..." rows="6"></textarea>
@@ -1368,17 +1601,19 @@
                     <div class="game-tile hot" onclick="window.enterGame()">
                         <div class="game-icon">👑</div>
                         <div class="game-name">Casino Shuffle 786</div>
+                        <div class="game-stats"><div class="entry-fee">Min: 10</div></div>
                         <button class="play-btn">Play Now</button>
                     </div>
                     <div class="game-tile hot" onclick="window.openFlappyGame()">
                         <div class="game-icon">🐦</div>
                         <div class="game-name">Flappy Checkpoint</div>
+                        <div class="game-stats"><div class="entry-fee">Min: 10</div><div class="entry-fee">Multiplier Up to 10x+</div></div>
                         <button class="play-btn">Play Now</button>
                     </div>
                 </div>
             </div>
             <aside class="leaderboard-panel">
-                <div class="leaderboard-header">🏆 Today's Champions</div>
+                <div class="leaderboard-header"><span>🏆</span><span class="leaderboard-title">Today's Champions</span></div>
                 <div class="leaderboard-list" id="leaderboardList"></div>
             </aside>
         </div>
@@ -1394,6 +1629,7 @@
     <div class="game-view" id="gameView">
         <button class="back-to-lobby" onclick="window.exitGame()">← Lobby</button>
         <div class="game-screen">
+            <div class="game-header"><h1>Casino Shuffle 786</h1></div>
             <div class="balance-bar"><span>💰 Balance: </span><span class="balance-amount" id="balanceDisplay">0</span></div>
             <div class="stats-panel">
                 <div class="stat-box"><div class="stat-label">Current Win</div><div class="stat-value win" id="currentWin">0</div></div>
@@ -1416,6 +1652,7 @@
                 <button class="action-btn cashout-btn hidden" id="cashoutBtn">CASH OUT</button>
                 <button class="action-btn continue-btn hidden" id="continueBtn">CONTINUE</button>
             </div>
+            <div class="message-display"><p class="message-text" id="messageText">Select your bet and tap START GAME</p></div>
             <div class="card-grid" id="cardGrid"></div>
         </div>
     </div>
@@ -1431,10 +1668,13 @@
         <button class="play-again-btn" onclick="window.resetGame()">TRY AGAIN</button>
     </div>
 
-    <!-- Flappy Game -->
+    <!-- ===== ORIGINAL FLAPPY CHECKPOINT GAME ===== -->
     <div class="flappy-overlay" id="flappyOverlay">
         <button class="flappy-back-btn" onclick="window.closeFlappyGame()">← Back to Lobby</button>
-        <div class="flappy-container"><canvas id="flappyCanvas" class="flappy-canvas"></canvas></div>
+        <div class="flappy-container">
+            <canvas id="flappyCanvas" class="flappy-canvas"></canvas>
+        </div>
+        
         <div id="flappyBetPopup" class="flappy-bet-overlay">
             <div class="flappy-bet-panel">
                 <h2>🐦 FLAPPY CHECKPOINT</h2>
@@ -1448,11 +1688,13 @@
                     <button class="flappy-bet-btn" data-flappy-bet="500">500</button>
                 </div>
                 <button id="flappyConfirmBetBtn" class="flappy-confirm-btn">✔ START FLYING</button>
-                <div class="flappy-info-text">✨ EVERY 7th PIPE = GOLDEN CHECKPOINT ✨</div>
+                <div class="flappy-info-text">✨ EVERY 7th PIPE = GOLDEN CHECKPOINT ✨<br>Harder difficulty: Smaller gaps, faster pipes! Pass it → Multiplier increases!</div>
             </div>
         </div>
+
         <div id="flappyActionPopup" class="flappy-action-popup" style="display: none;">
             <h3>🏆 CHECKPOINT! 🏆</h3>
+            <div class="flappy-checkpoint-label">MULTIPLIER x</div>
             <div id="flappyMultiplierValue" style="font-size: 42px; font-weight:bold; color:#ffd966;">1.4</div>
             <div class="flappy-win-amount" id="flappyPopupWinAmount">0</div>
             <div class="flappy-action-btns">
@@ -1486,14 +1728,12 @@
         let leaderboardInterval = null;
         let referralCodeFromURL = null;
 
-        // Check URL for referral code
         function checkURLForReferral() {
             const urlParams = new URLSearchParams(window.location.search);
             const ref = urlParams.get('ref');
             if (ref) {
                 referralCodeFromURL = ref.toUpperCase();
                 console.log('Referral code detected in URL:', referralCodeFromURL);
-                // Show hint and auto-fill
                 setTimeout(() => {
                     const hint = document.getElementById('referralHint');
                     const input = document.getElementById('regReferralCode');
@@ -1547,7 +1787,6 @@
         const CARD_VALUES = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4'];
         const CARD_SUITS = [{ symbol: '♥', color: 'red' }, { symbol: '♠', color: 'black' }, { symbol: '♦', color: 'red' }, { symbol: '♣', color: 'black' }];
 
-        // ==================== HELPER FUNCTIONS ====================
         function formatNumber(num) { if(num===undefined||num===null) return '0'; if(num>=1000000) return (num/1000000).toFixed(1)+'M'; if(num>=1000) return (num/1000).toFixed(1)+'K'; return num.toString(); }
         function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 
@@ -1649,13 +1888,11 @@
                         referrals: newReferrals
                     });
                     
-                    // Also update the referrer's balance
                     const referrerBalance = (referrerData.balance || 0) + bonusAmount;
                     await db.ref('users/' + referrerId + '/balance').set(referrerBalance);
                     
                     console.log('Referral bonus applied successfully!');
                     
-                    // If the referrer is currently logged in, update their local data
                     if (currentUser && currentUser.uid === referrerId) {
                         gameState.balance += bonusAmount;
                         referralData.totalEarnings = newEarnings;
@@ -1679,7 +1916,6 @@
         // ==================== AUTH FUNCTIONS ====================
         function openAuthModal() { 
             document.getElementById('authOverlay').classList.add('active');
-            // Check if there's a referral code from URL
             if (referralCodeFromURL) {
                 const hint = document.getElementById('referralHint');
                 const input = document.getElementById('regReferralCode');
@@ -1766,7 +2002,6 @@
                 return;
             }
             
-            // If no referral code in input but we have one from URL
             if (!referrerCode && referralCodeFromURL) {
                 referrerCode = referralCodeFromURL;
             }
@@ -1793,7 +2028,6 @@
                     referrals: [] 
                 };
                 
-                // NEW USERS START WITH 0 COINS
                 gameState = { 
                     balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0,
                     isPlaying: false, canFlip: false, firstCard: null, secondCard: null,
@@ -1816,7 +2050,6 @@
                 
                 await saveUserData();
                 
-                // Apply referral signup bonus if a referral code was provided
                 if (referrerCode) {
                     const bonusApplied = await applyReferralSignupBonus(currentUser.uid, referrerCode);
                     if (bonusApplied) {
@@ -1850,7 +2083,6 @@
 
         function guestLogin() {
             currentUser = { uid: 'GUEST_' + Date.now(), username: 'Guest_' + Math.floor(Math.random()*9999), avatar: '👤', isGuest: true };
-            // GUESTS START WITH 0 COINS
             gameState = { balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0, isPlaying: false, canFlip: false, firstCard: null, secondCard: null, cards: [], matchedPairs: 0, goldenCardsFound: [], totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0, firstWagerProgress: 0, hasCompletedFirstWager: false };
             updateHeader(); updateUI(); updateRewardUI(); updateMissionsUI(); hideAuthButtons(); closeAuth(); startRewardCountdown(); addNotification('Guest mode with 0 coins!', '👤'); showPopup('Guest Mode', 'You are playing as guest with 0 coins. Register or purchase coins to play!');
         }
@@ -1919,9 +2151,38 @@
         function changeAvatar() { if(currentUser?.isGuest) showPopup('Error', 'Guests cannot change avatar'); else document.getElementById('avatarPopup').classList.add('active'); }
         async function selectAvatar(avatar) { currentUser.avatar = avatar; await saveUserData(); updateHeader(); closeAvatarPopup(); showPopup('Success', 'Avatar updated'); }
         function closeAvatarPopup() { document.getElementById('avatarPopup').classList.remove('active'); }
-        function openWithdraw() { if(!currentUser) openAuthModal(); else if(gameState.balance<1000) showPopup('Insufficient', 'Need 1000 coins'); else if(!gameState.hasCompletedFirstWager && gameState.firstWagerProgress<10000) showPopup('Requirement', 'Wager ' + (10000-gameState.firstWagerProgress) + ' more coins first'); else { document.getElementById('withdrawBalance').innerText = formatNumber(gameState.balance); document.getElementById('withdrawPopup').classList.add('active'); } }
+        
+        function openWithdraw() { 
+            if(!currentUser) { openAuthModal(); return; }
+            if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 10000) {
+                showPopup('Wagering Required', 'You must wager 10,000 coins before you can withdraw!');
+                return;
+            }
+            if(gameState.balance < 100) { 
+                showPopup('Insufficient Balance', 'You need at least 100 coins to withdraw'); 
+                return; 
+            }
+            document.getElementById('withdrawBalance').innerText = formatNumber(gameState.balance);
+            document.getElementById('withdrawPopup').classList.add('active'); 
+        }
+        
         function closeWithdrawPopup() { document.getElementById('withdrawPopup').classList.remove('active'); }
-        async function processWithdraw() { const amount = parseInt(document.getElementById('withdrawAmount').value); if(amount<1000) showPopup('Error', 'Min 1000'); else if(amount>gameState.balance) showPopup('Error', 'Insufficient'); else { gameState.balance -= amount; updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); showPopup('Request Sent', amount + ' coins withdrawal requested'); closeWithdrawPopup(); } }
+        
+        async function processWithdraw() { 
+            const amount = parseInt(document.getElementById('withdrawAmount').value); 
+            if(amount<100) { showPopup('Error', 'Min 100 coins'); return; }
+            if(amount>49000) { showPopup('Error', 'Max 49,000 coins per withdrawal'); return; }
+            if(amount>gameState.balance) { showPopup('Error', 'Insufficient balance'); return; }
+            if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 10000) {
+                showPopup('Wagering Required', 'You must wager 10,000 coins before you can withdraw!');
+                return;
+            }
+            gameState.balance -= amount; 
+            updateUI(); 
+            if(currentUser && !currentUser.isGuest) await saveUserData(); 
+            showPopup('Request Sent', amount + ' coins withdrawal requested'); 
+            closeWithdrawPopup(); 
+        }
 
         // ==================== SHOP & PURCHASE ====================
         function renderShopGrid() {
@@ -1964,9 +2225,8 @@
         function closeOffers() { document.getElementById('offersSection').classList.remove('active'); }
         function openMissions() { document.getElementById('missionsSection').classList.add('active'); updateMissionsUI(); closeOffers(); }
         function closeMissions() { document.getElementById('missionsSection').classList.remove('active'); openOffers(); }
-        function openSupport() { document.getElementById('supportSection').classList.add('active'); closeOffers(); }
-        function closeSupport() { document.getElementById('supportSection').classList.remove('active'); openOffers(); }
-        function openSupportBot() { window.open('https://bots.easy-peasy.ai/bot/74d4a40f-b3ee-4e22-9ae0-bbb8f2b9fdd5','_blank'); }
+        function openSupport() { document.getElementById('additionalSupportSection').classList.add('active'); closeOffers(); }
+        function closeSupport() { document.getElementById('additionalSupportSection').classList.remove('active'); openOffers(); }
         function openAdditionalSupport() { document.getElementById('additionalSupportSection').classList.add('active'); }
         function closeAdditionalSupport() { document.getElementById('additionalSupportSection').classList.remove('active'); }
         function sendSupportMessage() { const msg=document.getElementById('supportMessage').value.trim(); if(!msg) showPopup('Error','Enter message'); else { addNotification('Support message sent','📧'); showPopup('Sent','Message sent to admin'); document.getElementById('supportMessage').value=''; closeAdditionalSupport(); } }
@@ -1986,7 +2246,7 @@
         function openNotificationPanel() { document.getElementById('notificationPanel').classList.add('open'); renderNotifications(); }
         function closeNotificationPanel() { document.getElementById('notificationPanel').classList.remove('open'); }
 
-        // ==================== GAME LOGIC ====================
+        // ==================== ORIGINAL CASINO SHUFFLE GAME ====================
         function enterGame() { if(!currentUser) { openAuthModal(); return; } if(gameState.balance < 10) { showPopup('Insufficient Balance', 'You need at least 10 coins to play! Purchase coins from shop.'); return; } resetGame(); document.getElementById('gameView').classList.add('active'); }
         function exitGame() { resetGame(); document.getElementById('gameView').classList.remove('active'); }
         function selectBet(amount) { if(gameState.isPlaying) return; if(amount>gameState.balance) showPopup('Insufficient','Not enough coins! Please purchase coins from shop.'); else { gameState.currentBet=amount; document.querySelectorAll('.bet-option').forEach(b=>b.classList.remove('selected')); document.querySelector(`.bet-option[data-bet="${amount}"]`).classList.add('selected'); } }
@@ -2001,29 +2261,608 @@
         function continuePlaying(){ gameState.canFlip=true; document.getElementById('cashoutBtn').classList.add('hidden'); document.getElementById('continueBtn').classList.add('hidden'); }
         function resetGame(){ document.getElementById('winOverlay').classList.remove('active'); document.getElementById('loseOverlay').classList.remove('active'); document.getElementById('betPanel').style.display='block'; document.getElementById('startBtn').classList.remove('hidden'); document.getElementById('cardGrid').innerHTML=''; gameState.currentBet=0; gameState.currentWin=0; gameState.multiplier=1; gameState.pairsMatched=0; gameState.isPlaying=false; gameState.canFlip=false; gameState.firstCard=null; gameState.secondCard=null; gameState.cards=[]; document.getElementById('cashoutBtn').classList.add('hidden'); document.getElementById('continueBtn').classList.add('hidden'); document.querySelectorAll('.bet-option').forEach(b=>b.classList.remove('selected')); }
 
-        // ==================== FLAPPY GAME ====================
-        let flappyGameActive=false, flappyAnimationId=null, flappyGameStateObj=null, flappyCurrentMultiplier=1, flappyCheckpointIndex=0, flappyPipesPassed=0, flappySelectedBet=null, flappyAwaitingCheckpoint=false, flappyCountdownInt=null, flappyTotalSpawned=0;
-        const FLAPPY_VW=400, FLAPPY_VH=600;
-        const FLAPPY_CFG={ width:400, height:600, birdSize:36, birdX:80, startY:250, gravity:0.65, jumpForce:-7.5, pipeSpeed:3.8, pipeWidth:60, pipeSpacing:190, gapSize:130, minGapY:140, maxGapY:360, maxSpeed:7.0 };
-        const multChain=[1.4,1.6,1.8,2.0,2.3,2.6,3.0,3.5,4.0,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0];
-        function initFlappy(){ const canvas=document.getElementById('flappyCanvas'); if(!canvas) return; flappyGameStateObj={ birdY:FLAPPY_CFG.startY, birdVelocity:0, pipes:[], groundOffset:0, score:0, wingUp:true, ctx:canvas.getContext('2d'), canvas, wingInterval:null, lastTimestamp:0 }; resetFlappyRound(); }
-        function resetFlappyRound(){ if(!flappyGameStateObj) return; flappyGameStateObj.birdY=FLAPPY_CFG.startY; flappyGameStateObj.birdVelocity=0; flappyGameStateObj.groundOffset=0; flappyGameStateObj.score=0; flappyGameStateObj.pipes=[{ x:FLAPPY_CFG.width+100, gapY:FLAPPY_CFG.minGapY+Math.random()*(FLAPPY_CFG.maxGapY-FLAPPY_CFG.minGapY), passed:false, isGolden:false }]; flappyPipesPassed=0; flappyCurrentMultiplier=1; flappyCheckpointIndex=0; flappyAwaitingCheckpoint=false; flappyTotalSpawned=1; FLAPPY_CFG.pipeSpeed=3.8; if(flappyCountdownInt) clearInterval(flappyCountdownInt); }
-        function updateFlappyPipes(delta){ let newPipes=[]; for(let p of flappyGameStateObj.pipes){ const nx=p.x-FLAPPY_CFG.pipeSpeed*delta; if(nx+FLAPPY_CFG.pipeWidth>-20) newPipes.push({...p, x:nx}); } if(newPipes.length===0 || newPipes[newPipes.length-1].x<FLAPPY_CFG.width-FLAPPY_CFG.pipeSpacing){ const gapY=FLAPPY_CFG.minGapY+Math.random()*(FLAPPY_CFG.maxGapY-FLAPPY_CFG.minGapY); flappyTotalSpawned++; newPipes.push({ x:FLAPPY_CFG.width+FLAPPY_CFG.pipeWidth, gapY, passed:false, isGolden:(flappyTotalSpawned%7===0) }); } return newPipes; }
-        function checkFlappyCollision(){ if(flappyGameStateObj.birdY<=0 || flappyGameStateObj.birdY>=FLAPPY_CFG.height-FLAPPY_CFG.birdSize-80) return true; const bird={ x:FLAPPY_CFG.birdX+4, y:flappyGameStateObj.birdY+4, w:FLAPPY_CFG.birdSize-8, h:FLAPPY_CFG.birdSize-8 }; for(let p of flappyGameStateObj.pipes){ const pipeLeft=p.x, pipeRight=p.x+FLAPPY_CFG.pipeWidth; const gapTop=p.gapY-FLAPPY_CFG.gapSize/2, gapBottom=p.gapY+FLAPPY_CFG.gapSize/2; if(bird.x+bird.w>pipeLeft && bird.x<pipeRight){ if(bird.y<gapTop || bird.y+bird.h>gapBottom) return true; } } return false; }
-        function updateFlappyScoring(){ for(let p of flappyGameStateObj.pipes){ if(!p.passed && p.x+FLAPPY_CFG.pipeWidth<FLAPPY_CFG.birdX){ flappyGameStateObj.score++; flappyPipesPassed++; p.passed=true; if(flappyPipesPassed%5===0) FLAPPY_CFG.pipeSpeed=Math.min(FLAPPY_CFG.maxSpeed,FLAPPY_CFG.pipeSpeed+0.1); if(p.isGolden && !flappyAwaitingCheckpoint && flappyGameActive){ let mult=multChain[flappyCheckpointIndex]||(multChain[multChain.length-1]+(flappyCheckpointIndex-multChain.length+1)*0.5); flappyCheckpointIndex++; triggerFlappyCheckpoint(mult); return; } } } }
-        function triggerFlappyCheckpoint(mult){ if(!flappyGameActive || flappyAwaitingCheckpoint) return; flappyCurrentMultiplier=mult; flappyAwaitingCheckpoint=true; if(flappyAnimationId){ cancelAnimationFrame(flappyAnimationId); flappyAnimationId=null; } const win=flappySelectedBet*flappyCurrentMultiplier; document.getElementById('flappyMultiplierValue').innerText=`x${flappyCurrentMultiplier.toFixed(2)}`; document.getElementById('flappyPopupWinAmount').innerText=Math.floor(win); document.getElementById('flappyActionPopup').style.display='block'; document.getElementById('flappyContinueTimer').style.display='none'; }
-        async function flappyCashoutAction(){ if(!flappyAwaitingCheckpoint) return; const win=flappySelectedBet*flappyCurrentMultiplier; gameState.balance+=win; gameState.totalWins++; gameState.totalSpent+=flappySelectedBet; gameState.firstWagerProgress+=flappySelectedBet; checkAndUpdateMissions(); updateVIPLevel(); updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); addNotification(`Flappy cashed out ${formatNumber(win)}!`,'🐦'); closeFlappyGame(); }
-        function flappyContinueAction(){ if(!flappyAwaitingCheckpoint) return; let timer=3; document.getElementById('flappyContinueTimer').style.display='block'; document.getElementById('flappyContinueTimer').innerText=`⏱️ ${timer}s`; if(flappyCountdownInt) clearInterval(flappyCountdownInt); flappyCountdownInt=setInterval(()=>{ timer--; document.getElementById('flappyContinueTimer').innerText=`⏱️ ${timer}s`; if(timer<=0){ clearInterval(flappyCountdownInt); flappyCountdownInt=null; document.getElementById('flappyActionPopup').style.display='none'; document.getElementById('flappyContinueTimer').style.display='none'; flappyAwaitingCheckpoint=false; flappyGameStateObj.lastTimestamp=0; flappyAnimationId=requestAnimationFrame(flappyGameLoop); } },1000); }
-        function drawFlappyGame(){ const ctx=flappyGameStateObj.ctx, canvas=flappyGameStateObj.canvas; ctx.clearRect(0,0,FLAPPY_VW,FLAPPY_VH); const grad=ctx.createLinearGradient(0,0,0,FLAPPY_VH); grad.addColorStop(0,'#1a3a5c'); grad.addColorStop(0.7,'#4a8fba'); ctx.fillStyle=grad; ctx.fillRect(0,0,FLAPPY_VW,FLAPPY_VH); ctx.fillStyle='#2d6a4f'; ctx.fillRect(0,FLAPPY_VH-80,FLAPPY_VW,35); for(let p of flappyGameStateObj.pipes){ const topH=p.gapY-FLAPPY_CFG.gapSize/2; const botY=p.gapY+FLAPPY_CFG.gapSize/2; const botH=FLAPPY_VH-botY-80; if(p.isGolden){ ctx.fillStyle='#ffb347'; ctx.fillRect(p.x,0,FLAPPY_CFG.pipeWidth,topH); ctx.fillStyle='#ffb347'; ctx.fillRect(p.x,botY,FLAPPY_CFG.pipeWidth,botH); ctx.fillStyle='#e67e22'; ctx.fillRect(p.x-5,topH-25,FLAPPY_CFG.pipeWidth+10,25); ctx.fillRect(p.x-5,botY,FLAPPY_CFG.pipeWidth+10,25); ctx.fillStyle='#FFE484'; ctx.font='bold 20px monospace'; ctx.fillText('⭐',p.x+22,p.gapY-22); }else{ ctx.fillStyle='#1b5e20'; ctx.fillRect(p.x,0,FLAPPY_CFG.pipeWidth,topH); ctx.fillStyle='#1b5e20'; ctx.fillRect(p.x,botY,FLAPPY_CFG.pipeWidth,botH); ctx.fillStyle='#0d3b0f'; ctx.fillRect(p.x-5,topH-25,FLAPPY_CFG.pipeWidth+10,25); ctx.fillRect(p.x-5,botY,FLAPPY_CFG.pipeWidth+10,25); } } ctx.fillStyle='#ffb74d'; ctx.beginPath(); ctx.ellipse(FLAPPY_CFG.birdX+18,flappyGameStateObj.birdY+18,16,16,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#e65100'; ctx.beginPath(); ctx.ellipse(FLAPPY_CFG.birdX+14,flappyGameStateObj.birdY+18+(flappyGameStateObj.wingUp?-8:8),12,8,-0.3,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(FLAPPY_CFG.birdX+24,flappyGameStateObj.birdY+12,7,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(FLAPPY_CFG.birdX+25,flappyGameStateObj.birdY+12,3,0,Math.PI*2); ctx.fill(); ctx.font='bold 56px monospace'; ctx.fillStyle='#ffd700'; ctx.fillText(flappyGameStateObj.score,FLAPPY_VW/2-20,65); if(flappyCurrentMultiplier>1){ ctx.font='bold 16px monospace'; ctx.fillStyle='#ffd700'; ctx.fillText(`x${flappyCurrentMultiplier.toFixed(2)} MULTI`,15,50); } }
-        function flappyGameLoop(timestamp){ if(!flappyGameActive || flappyAwaitingCheckpoint) return; if(!flappyGameStateObj.lastTimestamp) flappyGameStateObj.lastTimestamp=timestamp; let delta=Math.min((timestamp-flappyGameStateObj.lastTimestamp)/16.67,2); if(delta<=0){ flappyAnimationId=requestAnimationFrame(flappyGameLoop); flappyGameStateObj.lastTimestamp=timestamp; return; } flappyGameStateObj.lastTimestamp=timestamp; flappyGameStateObj.birdVelocity=Math.min(flappyGameStateObj.birdVelocity+FLAPPY_CFG.gravity*delta,12); flappyGameStateObj.birdY+=flappyGameStateObj.birdVelocity*delta; flappyGameStateObj.birdY=Math.max(0,Math.min(flappyGameStateObj.birdY,FLAPPY_CFG.height-FLAPPY_CFG.birdSize-80)); flappyGameStateObj.groundOffset=(flappyGameStateObj.groundOffset+FLAPPY_CFG.pipeSpeed*delta)%24; flappyGameStateObj.pipes=updateFlappyPipes(delta); if(checkFlappyCollision()){ flappyGameActive=false; if(flappyAnimationId) cancelAnimationFrame(flappyAnimationId); flappyAnimationId=null; addNotification('Crashed! Bet lost','💀'); showPopup('Game Over','You crashed!'); closeFlappyGame(); return; } updateFlappyScoring(); drawFlappyGame(); flappyAnimationId=requestAnimationFrame(flappyGameLoop); }
-        async function startFlappyGame(bet){ if(bet>gameState.balance){ showPopup('Insufficient','Not enough coins! Purchase coins from shop.'); return false; } gameState.balance-=bet; flappySelectedBet=bet; updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); resetFlappyRound(); flappyGameActive=true; flappyAwaitingCheckpoint=false; document.getElementById('flappyBetPopup').style.display='none'; document.getElementById('flappyActionPopup').style.display='none'; flappyGameStateObj.lastTimestamp=0; flappyAnimationId=requestAnimationFrame(flappyGameLoop); if(flappyGameStateObj.wingInterval) clearInterval(flappyGameStateObj.wingInterval); flappyGameStateObj.wingInterval=setInterval(()=>{ flappyGameStateObj.wingUp=!flappyGameStateObj.wingUp; if(flappyGameActive && !flappyAwaitingCheckpoint) drawFlappyGame(); },100); return true; }
-        function openFlappyGame(){ if(!currentUser) { openAuthModal(); return; } if(gameState.balance < 10) { showPopup('Insufficient Balance', 'You need at least 10 coins to play! Purchase coins from shop.'); return; } document.getElementById('flappyOverlay').classList.add('active'); document.getElementById('flappyBetPopup').style.display='flex'; document.getElementById('flappyActionPopup').style.display='none'; document.getElementById('flappyBalanceDisplay').innerText=`💰 BAL: ${Math.floor(gameState.balance)}`; flappyGameActive=false; flappySelectedBet=null; initFlappy(); const canvas=document.getElementById('flappyCanvas'); function resizeFlappy(){ const cont=canvas.parentElement, cw=window.innerWidth, ch=window.innerHeight; const scale=Math.min(cw/FLAPPY_VW,ch/FLAPPY_VH); canvas.style.width=(FLAPPY_VW*scale)+'px'; canvas.style.height=(FLAPPY_VH*scale)+'px'; canvas.width=FLAPPY_VW; canvas.height=FLAPPY_VH; if(flappyGameStateObj) flappyGameStateObj.ctx=canvas.getContext('2d'); drawFlappyGame(); } resizeFlappy(); window.addEventListener('resize',resizeFlappy); canvas.onclick=()=>{ if(flappyGameActive && !flappyAwaitingCheckpoint) flappyGameStateObj.birdVelocity=FLAPPY_CFG.jumpForce; }; document.querySelectorAll('.flappy-bet-btn').forEach(btn=>{ btn.onclick=()=>{ document.querySelectorAll('.flappy-bet-btn').forEach(b=>b.style.background='#2a2a3e'); btn.style.background='#f59e0b'; flappySelectedBet=parseInt(btn.getAttribute('data-flappy-bet')); }; }); document.getElementById('flappyConfirmBetBtn').onclick=()=>{ if(!flappySelectedBet) showPopup('Select Bet','Choose bet amount'); else if(flappySelectedBet>gameState.balance) showPopup('Insufficient','Not enough coins! Purchase coins from shop.'); else startFlappyGame(flappySelectedBet); }; document.getElementById('flappyCashoutBtn').onclick=flappyCashoutAction; document.getElementById('flappyContinueBtn').onclick=flappyContinueAction; }
-        function closeFlappyGame(){ if(flappyAnimationId) cancelAnimationFrame(flappyAnimationId); if(flappyGameStateObj && flappyGameStateObj.wingInterval) clearInterval(flappyGameStateObj.wingInterval); if(flappyCountdownInt) clearInterval(flappyCountdownInt); flappyGameActive=false; flappyAwaitingCheckpoint=false; document.getElementById('flappyOverlay').classList.remove('active'); updateUI(); }
+        // ==================== ORIGINAL FLAPPY CHECKPOINT GAME - COMPLETE ====================
+        let flappyGameActive = false;
+        let flappyAnimationId = null;
+        let flappyGameState = null;
+        let flappyCurrentMultiplier = 1.0;
+        let flappyCheckpointIndex = 0;
+        let flappyPipesPassedCount = 0;
+        let flappySelectedBet = null;
+        let flappyAwaitingCheckpoint = false;
+        let flappyCountdownInterval = null;
+        let flappyTotalPipesSpawned = 0;
 
-        // ==================== LEADERBOARD & PARTICLES ====================
-        function renderLeaderboard(){ const list=document.getElementById('leaderboardList'); list.innerHTML='<div style="text-align:center;color:#666;">Loading...</div>'; db.ref('users').once('value').then(snap=>{ const users=[]; snap.forEach(s=>{ const d=s.val(); if(d.username) users.push({username:d.username, totalSpent:d.totalSpent||0, avatar:d.avatar||'👤'}); }); users.sort((a,b)=>b.totalSpent-a.totalSpent); list.innerHTML=users.slice(0,7).map((u,i)=>{ let cls=''; if(i===0) cls='gold'; else if(i===1) cls='silver'; else if(i===2) cls='bronze'; return `<div class="leaderboard-item"><div class="rank-number ${cls}">${i+1}</div><div class="leader-avatar">${u.avatar}</div><div class="leader-info"><div class="leader-name">${escapeHtml(u.username)}</div><div class="leader-win">${formatNumber(u.totalSpent)} spent</div></div></div>`; }).join(''); }); }
-        function createParticles(){ for(let i=0;i<50;i++){ const p=document.createElement('div'); p.className='particle'; p.style.left=Math.random()*100+'%'; p.style.animationDelay=Math.random()*10+'s'; p.style.animationDuration=(10+Math.random()*10)+'s'; document.getElementById('particles').appendChild(p); } }
-        function hideSplash(){ const splash=document.getElementById('splashScreen'); splash.classList.add('fade-out'); setTimeout(()=>{ splash.style.display='none'; document.getElementById('appContainer').classList.add('visible'); },500); }
+        const FLAPPY_VIRTUAL_WIDTH = 400;
+        const FLAPPY_VIRTUAL_HEIGHT = 600;
+        const FLAPPY_CONFIG_GAME = {
+            width: FLAPPY_VIRTUAL_WIDTH,
+            height: FLAPPY_VIRTUAL_HEIGHT,
+            birdSize: 36,
+            birdX: 80,
+            startY: 250,
+            gravity: 0.65,
+            jumpForce: -7.5,
+            pipeSpeed: 3.8,
+            pipeWidth: 60,
+            pipeSpacing: 190,
+            gapSize: 130,
+            minGapY: 140,
+            maxGapY: 360,
+            maxSpeed: 7.0
+        };
+
+        const multiplierChain = [1.4, 1.6, 1.8, 2.0, 2.3, 2.6, 3.0, 3.5, 4.0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0];
+
+        function initFlappyGame() {
+            const canvas = document.getElementById('flappyCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            flappyGameState = {
+                birdY: FLAPPY_CONFIG_GAME.startY,
+                birdVelocity: 0,
+                pipes: [],
+                groundOffset: 0,
+                score: 0,
+                wingUp: true,
+                ctx: ctx,
+                canvas: canvas,
+                wingInterval: null,
+                lastTimestamp: 0
+            };
+            resetFlappyRound();
+        }
+
+        function resetFlappyRound() {
+            if (!flappyGameState) return;
+            flappyGameState.birdY = FLAPPY_CONFIG_GAME.startY;
+            flappyGameState.birdVelocity = 0;
+            flappyGameState.groundOffset = 0;
+            flappyGameState.score = 0;
+            const initGapY = FLAPPY_CONFIG_GAME.minGapY + Math.random() * (FLAPPY_CONFIG_GAME.maxGapY - FLAPPY_CONFIG_GAME.minGapY);
+            flappyGameState.pipes = [{ x: FLAPPY_CONFIG_GAME.width + 100, gapY: initGapY, passed: false, isGolden: false }];
+            flappyPipesPassedCount = 0;
+            flappyCurrentMultiplier = 1.0;
+            flappyCheckpointIndex = 0;
+            flappyAwaitingCheckpoint = false;
+            flappyTotalPipesSpawned = 1;
+            FLAPPY_CONFIG_GAME.pipeSpeed = 3.8;
+            if (flappyCountdownInterval) clearInterval(flappyCountdownInterval);
+        }
+
+        function updateFlappyPipes(deltaTime) {
+            let newPipes = [];
+            for (let pipe of flappyGameState.pipes) {
+                const newX = pipe.x - FLAPPY_CONFIG_GAME.pipeSpeed * deltaTime;
+                if (newX + FLAPPY_CONFIG_GAME.pipeWidth > -20) {
+                    newPipes.push({ ...pipe, x: newX });
+                }
+            }
+            if (newPipes.length === 0 || newPipes[newPipes.length - 1].x < FLAPPY_CONFIG_GAME.width - FLAPPY_CONFIG_GAME.pipeSpacing) {
+                const gapY = FLAPPY_CONFIG_GAME.minGapY + Math.random() * (FLAPPY_CONFIG_GAME.maxGapY - FLAPPY_CONFIG_GAME.minGapY);
+                flappyTotalPipesSpawned++;
+                const isGolden = (flappyTotalPipesSpawned % 7 === 0);
+                newPipes.push({ x: FLAPPY_CONFIG_GAME.width + FLAPPY_CONFIG_GAME.pipeWidth, gapY: gapY, passed: false, isGolden: isGolden });
+            }
+            return newPipes;
+        }
+
+        function checkFlappyCollision() {
+            if (flappyGameState.birdY <= 0 || flappyGameState.birdY >= FLAPPY_CONFIG_GAME.height - FLAPPY_CONFIG_GAME.birdSize - 80) return true;
+            const birdRect = {
+                x: FLAPPY_CONFIG_GAME.birdX + 4,
+                y: flappyGameState.birdY + 4,
+                width: FLAPPY_CONFIG_GAME.birdSize - 8,
+                height: FLAPPY_CONFIG_GAME.birdSize - 8,
+                right: FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 4,
+                left: FLAPPY_CONFIG_GAME.birdX + 4,
+                top: flappyGameState.birdY + 4,
+                bottom: flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize - 4
+            };
+            for (let pipe of flappyGameState.pipes) {
+                const pipeLeft = pipe.x;
+                const pipeRight = pipe.x + FLAPPY_CONFIG_GAME.pipeWidth;
+                const gapTop = pipe.gapY - FLAPPY_CONFIG_GAME.gapSize / 2;
+                const gapBottom = pipe.gapY + FLAPPY_CONFIG_GAME.gapSize / 2;
+                if (birdRect.right > pipeLeft && birdRect.left < pipeRight) {
+                    if (birdRect.top < gapTop || birdRect.bottom > gapBottom) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function updateFlappyScoring() {
+            for (let i = 0; i < flappyGameState.pipes.length; i++) {
+                const pipe = flappyGameState.pipes[i];
+                if (!pipe.passed && pipe.x + FLAPPY_CONFIG_GAME.pipeWidth < FLAPPY_CONFIG_GAME.birdX) {
+                    flappyGameState.score++;
+                    flappyPipesPassedCount++;
+                    pipe.passed = true;
+
+                    if (flappyPipesPassedCount % 5 === 0) {
+                        FLAPPY_CONFIG_GAME.pipeSpeed = Math.min(FLAPPY_CONFIG_GAME.maxSpeed, FLAPPY_CONFIG_GAME.pipeSpeed + 0.1);
+                    }
+
+                    if (pipe.isGolden === true && !flappyAwaitingCheckpoint && flappyGameActive) {
+                        let multiplierValue = 1.4;
+                        if (flappyCheckpointIndex < multiplierChain.length) {
+                            multiplierValue = multiplierChain[flappyCheckpointIndex];
+                        } else {
+                            multiplierValue = multiplierChain[multiplierChain.length - 1] + (flappyCheckpointIndex - multiplierChain.length + 1) * 0.5;
+                        }
+                        flappyCheckpointIndex++;
+                        triggerFlappyCheckpoint(multiplierValue);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function triggerFlappyCheckpoint(multiplierValue) {
+            if (!flappyGameActive) return;
+            if (flappyAwaitingCheckpoint) return;
+            flappyCurrentMultiplier = multiplierValue;
+            flappyAwaitingCheckpoint = true;
+            if (flappyAnimationId) {
+                cancelAnimationFrame(flappyAnimationId);
+                flappyAnimationId = null;
+            }
+            const winAmount = flappySelectedBet * flappyCurrentMultiplier;
+            document.getElementById('flappyMultiplierValue').innerText = `x${flappyCurrentMultiplier.toFixed(2)}`;
+            document.getElementById('flappyPopupWinAmount').innerText = `${Math.floor(winAmount)}`;
+            document.getElementById('flappyActionPopup').style.display = 'block';
+            document.getElementById('flappyContinueTimer').style.display = 'none';
+            document.querySelector('#flappyActionPopup .flappy-action-btns').style.opacity = '1';
+        }
+
+        function flappyCashout() {
+            if (!flappyAwaitingCheckpoint) return;
+            const win = flappySelectedBet * flappyCurrentMultiplier;
+            gameState.balance += win;
+            gameState.totalWins++;
+            gameState.totalSpent += flappySelectedBet;
+            gameState.firstWagerProgress += flappySelectedBet;
+            checkAndUpdateMissions();
+            updateVIPLevel();
+            updateUI();
+            if (currentUser && !currentUser.isGuest) saveUserData();
+            addNotification(`Flappy Checkpoint: You cashed out ${formatNumber(win)} coins!`, '🐦');
+            closeFlappyGame();
+        }
+
+        function flappyContinue() {
+            if (!flappyAwaitingCheckpoint) return;
+            document.querySelector('#flappyActionPopup .flappy-action-btns').style.opacity = '0.4';
+            document.getElementById('flappyContinueTimer').style.display = 'block';
+            let timer = 3;
+            document.getElementById('flappyContinueTimer').innerText = `⏱️ ${timer}s`;
+            if (flappyCountdownInterval) clearInterval(flappyCountdownInterval);
+            flappyCountdownInterval = setInterval(() => {
+                timer--;
+                document.getElementById('flappyContinueTimer').innerText = `⏱️ ${timer}s`;
+                if (timer <= 0) {
+                    clearInterval(flappyCountdownInterval);
+                    flappyCountdownInterval = null;
+                    resumeFlappyGame();
+                }
+            }, 1000);
+        }
+
+        function resumeFlappyGame() {
+            document.querySelector('#flappyActionPopup .flappy-action-btns').style.opacity = '1';
+            document.getElementById('flappyContinueTimer').style.display = 'none';
+            document.getElementById('flappyActionPopup').style.display = 'none';
+            flappyAwaitingCheckpoint = false;
+            flappyGameState.lastTimestamp = 0;
+            flappyAnimationId = requestAnimationFrame(flappyGameLoop);
+        }
+
+        function flappyGameLoop(timestamp) {
+            if (!flappyGameActive || flappyAwaitingCheckpoint) {
+                return;
+            }
+            if (!flappyGameState.lastTimestamp) flappyGameState.lastTimestamp = timestamp;
+            let delta = Math.min((timestamp - flappyGameState.lastTimestamp) / 16.67, 2.0);
+            if (delta <= 0) {
+                flappyAnimationId = requestAnimationFrame(flappyGameLoop);
+                flappyGameState.lastTimestamp = timestamp;
+                return;
+            }
+            flappyGameState.lastTimestamp = timestamp;
+            flappyGameState.birdVelocity = Math.min(flappyGameState.birdVelocity + FLAPPY_CONFIG_GAME.gravity * delta, 12);
+            flappyGameState.birdY = flappyGameState.birdY + flappyGameState.birdVelocity * delta;
+            flappyGameState.birdY = Math.max(0, Math.min(flappyGameState.birdY, FLAPPY_CONFIG_GAME.height - FLAPPY_CONFIG_GAME.birdSize - 80));
+            flappyGameState.groundOffset = (flappyGameState.groundOffset + FLAPPY_CONFIG_GAME.pipeSpeed * delta) % 24;
+            flappyGameState.pipes = updateFlappyPipes(delta);
+            if (checkFlappyCollision()) {
+                flappyGameActive = false;
+                if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
+                flappyAnimationId = null;
+                addNotification('Flappy Checkpoint: You crashed! Bet lost.', '💀');
+                showPopup('Game Over!', 'You crashed into a pipe! Your bet is lost.');
+                closeFlappyGame();
+                return;
+            }
+            updateFlappyScoring();
+            drawFlappyGame();
+            flappyAnimationId = requestAnimationFrame(flappyGameLoop);
+        }
+
+        function drawFlappyGame() {
+            const ctx = flappyGameState.ctx;
+            const canvas = flappyGameState.canvas;
+            ctx.clearRect(0, 0, FLAPPY_VIRTUAL_WIDTH, FLAPPY_VIRTUAL_HEIGHT);
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, FLAPPY_VIRTUAL_HEIGHT);
+            gradient.addColorStop(0, '#1a3a5c');
+            gradient.addColorStop(0.4, '#2d5a7b');
+            gradient.addColorStop(0.7, '#4a8fba');
+            gradient.addColorStop(1, '#f0c27b');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, FLAPPY_VIRTUAL_WIDTH, FLAPPY_VIRTUAL_HEIGHT);
+
+            // Clouds
+            ctx.save();
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(FLAPPY_VIRTUAL_WIDTH - 60, 60, 35, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffdd99';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(FLAPPY_VIRTUAL_WIDTH - 60, 60, 25, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffedb3';
+            ctx.fill();
+            ctx.restore();
+
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath();
+            ctx.ellipse(60, 70, 45, 25, 0, 0, Math.PI * 2);
+            ctx.ellipse(100, 60, 40, 22, 0, 0, Math.PI * 2);
+            ctx.ellipse(140, 68, 35, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(280, 85, 40, 22, 0, 0, Math.PI * 2);
+            ctx.ellipse(320, 75, 35, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Hills
+            ctx.fillStyle = 'rgba(30, 80, 40, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(0, FLAPPY_VIRTUAL_HEIGHT - 100);
+            ctx.quadraticCurveTo(80, FLAPPY_VIRTUAL_HEIGHT - 140, 160, FLAPPY_VIRTUAL_HEIGHT - 115);
+            ctx.quadraticCurveTo(240, FLAPPY_VIRTUAL_HEIGHT - 90, 320, FLAPPY_VIRTUAL_HEIGHT - 120);
+            ctx.quadraticCurveTo(380, FLAPPY_VIRTUAL_HEIGHT - 100, FLAPPY_VIRTUAL_WIDTH, FLAPPY_VIRTUAL_HEIGHT - 110);
+            ctx.lineTo(FLAPPY_VIRTUAL_WIDTH, FLAPPY_VIRTUAL_HEIGHT - 80);
+            ctx.lineTo(0, FLAPPY_VIRTUAL_HEIGHT - 80);
+            ctx.fill();
+
+            // Ground
+            ctx.fillStyle = '#2d6a4f';
+            ctx.fillRect(0, FLAPPY_VIRTUAL_HEIGHT - 80, FLAPPY_VIRTUAL_WIDTH, 35);
+            ctx.fillStyle = '#1b4332';
+            ctx.fillRect(0, FLAPPY_VIRTUAL_HEIGHT - 80, FLAPPY_VIRTUAL_WIDTH, 10);
+            ctx.fillStyle = '#40916c';
+            for (let i = 0; i < 25; i++) {
+                const x = (i * 25 - flappyGameState.groundOffset) % (FLAPPY_VIRTUAL_WIDTH + 30) - 15;
+                if (x > 0 && x < FLAPPY_VIRTUAL_WIDTH) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, FLAPPY_VIRTUAL_HEIGHT - 75);
+                    ctx.lineTo(x - 5, FLAPPY_VIRTUAL_HEIGHT - 85);
+                    ctx.lineTo(x + 5, FLAPPY_VIRTUAL_HEIGHT - 85);
+                    ctx.fill();
+                }
+            }
+
+            // Pipes
+            for (const pipe of flappyGameState.pipes) {
+                const topHeight = pipe.gapY - FLAPPY_CONFIG_GAME.gapSize / 2;
+                const bottomY = pipe.gapY + FLAPPY_CONFIG_GAME.gapSize / 2;
+                const bottomHeight = FLAPPY_VIRTUAL_HEIGHT - bottomY - 80;
+
+                if (pipe.isGolden) {
+                    ctx.save();
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ffd700';
+                    ctx.fillStyle = '#ffb347';
+                    ctx.fillRect(pipe.x, 0, FLAPPY_CONFIG_GAME.pipeWidth, topHeight);
+                    ctx.fillStyle = '#ffd966';
+                    ctx.fillRect(pipe.x + 3, 0, FLAPPY_CONFIG_GAME.pipeWidth - 6, topHeight);
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(pipe.x - 5, topHeight - 28, FLAPPY_CONFIG_GAME.pipeWidth + 10, 28);
+                    ctx.fillStyle = '#ffb347';
+                    ctx.fillRect(pipe.x, bottomY, FLAPPY_CONFIG_GAME.pipeWidth, bottomHeight);
+                    ctx.fillStyle = '#ffd966';
+                    ctx.fillRect(pipe.x + 3, bottomY, FLAPPY_CONFIG_GAME.pipeWidth - 6, bottomHeight);
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(pipe.x - 5, bottomY, FLAPPY_CONFIG_GAME.pipeWidth + 10, 28);
+                    ctx.restore();
+                    ctx.font = 'bold 20px "Segoe UI"';
+                    ctx.fillStyle = '#FFE484';
+                    ctx.shadowBlur = 8;
+                    ctx.fillText('⭐', pipe.x + 22, pipe.gapY - 22);
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('CHECKPOINT', pipe.x + 8, pipe.gapY - 38);
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.fillStyle = '#1b5e20';
+                    ctx.fillRect(pipe.x, 0, FLAPPY_CONFIG_GAME.pipeWidth, topHeight);
+                    ctx.fillStyle = '#2e7d32';
+                    ctx.fillRect(pipe.x + 3, 0, FLAPPY_CONFIG_GAME.pipeWidth - 6, topHeight);
+                    ctx.fillStyle = '#0d3b0f';
+                    ctx.fillRect(pipe.x - 5, topHeight - 25, FLAPPY_CONFIG_GAME.pipeWidth + 10, 25);
+                    ctx.fillStyle = '#1b5e20';
+                    ctx.fillRect(pipe.x, bottomY, FLAPPY_CONFIG_GAME.pipeWidth, bottomHeight);
+                    ctx.fillStyle = '#2e7d32';
+                    ctx.fillRect(pipe.x + 3, bottomY, FLAPPY_CONFIG_GAME.pipeWidth - 6, bottomHeight);
+                    ctx.fillStyle = '#0d3b0f';
+                    ctx.fillRect(pipe.x - 5, bottomY, FLAPPY_CONFIG_GAME.pipeWidth + 10, 25);
+                }
+            }
+
+            // Bird
+            const rotation = Math.min(Math.max(flappyGameState.birdVelocity * 5, -35), 45) * Math.PI / 180;
+            ctx.save();
+            ctx.translate(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize / 2, flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2);
+            ctx.rotate(rotation);
+            ctx.translate(-(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize / 2), -(flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2));
+
+            ctx.fillStyle = '#ffb74d';
+            ctx.beginPath();
+            ctx.ellipse(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize / 2, flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2, FLAPPY_CONFIG_GAME.birdSize / 2 - 2, FLAPPY_CONFIG_GAME.birdSize / 2 - 1, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffe0b2';
+            ctx.beginPath();
+            ctx.ellipse(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize / 2 - 2, flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2 + 2, 10, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const wingY = flappyGameState.wingUp ? -8 : 8;
+            ctx.fillStyle = '#e65100';
+            ctx.beginPath();
+            ctx.ellipse(FLAPPY_CONFIG_GAME.birdX + 14, flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2 + wingY, 12, 8, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#bf360c';
+            ctx.beginPath();
+            ctx.ellipse(FLAPPY_CONFIG_GAME.birdX + 12, flappyGameState.birdY + FLAPPY_CONFIG_GAME.birdSize / 2 + wingY - 2, 8, 6, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 12, flappyGameState.birdY + 12, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.arc(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 11, flappyGameState.birdY + 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 13, flappyGameState.birdY + 10, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ff6d00';
+            ctx.beginPath();
+            ctx.moveTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 6, flappyGameState.birdY + 14);
+            ctx.lineTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize + 5, flappyGameState.birdY + 16);
+            ctx.lineTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 6, flappyGameState.birdY + 20);
+            ctx.fill();
+
+            ctx.fillStyle = '#ff8f00';
+            ctx.beginPath();
+            ctx.moveTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 10, flappyGameState.birdY + 5);
+            ctx.lineTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 5, flappyGameState.birdY - 3);
+            ctx.lineTo(FLAPPY_CONFIG_GAME.birdX + FLAPPY_CONFIG_GAME.birdSize - 2, flappyGameState.birdY + 4);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Score
+            ctx.font = 'bold 56px "Orbitron", monospace';
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillText(flappyGameState.score, FLAPPY_VIRTUAL_WIDTH / 2 - 18, 67);
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(flappyGameState.score, FLAPPY_VIRTUAL_WIDTH / 2 - 20, 65);
+
+            // Multiplier display
+            if (flappyCurrentMultiplier > 1.0) {
+                ctx.font = 'bold 16px "Orbitron", monospace';
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowBlur = 4;
+                ctx.fillText(`x${flappyCurrentMultiplier.toFixed(2)} MULTIPLIER`, 15, 50);
+                ctx.font = 'bold 12px monospace';
+                ctx.fillStyle = '#ffb347';
+                const pipesUntilNext = 7 - (flappyPipesPassedCount % 7);
+                ctx.fillText(`🎯 NEXT CP: ${pipesUntilNext === 7 ? 7 : pipesUntilNext} pipes`, 15, 80);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function startFlappyGame(betAmount) {
+            if (betAmount > gameState.balance) {
+                showPopup('Insufficient Balance', 'You don\'t have enough coins!');
+                return false;
+            }
+            gameState.balance -= betAmount;
+            flappySelectedBet = betAmount;
+            updateUI();
+            if (currentUser && !currentUser.isGuest) saveUserData();
+            resetFlappyRound();
+            flappyGameActive = true;
+            flappyAwaitingCheckpoint = false;
+            document.getElementById('flappyBetPopup').style.display = 'none';
+            document.getElementById('flappyActionPopup').style.display = 'none';
+            flappyGameState.lastTimestamp = 0;
+            flappyAnimationId = requestAnimationFrame(flappyGameLoop);
+            if (flappyGameState.wingInterval) clearInterval(flappyGameState.wingInterval);
+            flappyGameState.wingInterval = setInterval(() => {
+                flappyGameState.wingUp = !flappyGameState.wingUp;
+                if (flappyGameActive && !flappyAwaitingCheckpoint) drawFlappyGame();
+            }, 100);
+            return true;
+        }
+
+        function openFlappyGame() {
+            if (!currentUser) {
+                showPopup('Login Required', 'Please login to play');
+                openAuthModal();
+                return;
+            }
+            if (gameState.balance < 10) {
+                showPopup('Insufficient Balance', 'You need at least 10 coins to play! Purchase coins from shop.');
+                return;
+            }
+            document.getElementById('flappyOverlay').classList.add('active');
+            document.getElementById('flappyBetPopup').style.display = 'flex';
+            document.getElementById('flappyActionPopup').style.display = 'none';
+            document.getElementById('flappyBalanceDisplay').innerText = `💰 BAL: ${Math.floor(gameState.balance)}`;
+            flappyGameActive = false;
+            flappySelectedBet = null;
+            initFlappyGame();
+
+            const canvas = document.getElementById('flappyCanvas');
+            function updateFlappyScale() {
+                const container = canvas.parentElement;
+                const containerWidth = window.innerWidth;
+                const containerHeight = window.innerHeight;
+                const scaleX = containerWidth / FLAPPY_VIRTUAL_WIDTH;
+                const scaleY = containerHeight / FLAPPY_VIRTUAL_HEIGHT;
+                const scale = Math.min(scaleX, scaleY);
+                const actualWidth = FLAPPY_VIRTUAL_WIDTH * scale;
+                const actualHeight = FLAPPY_VIRTUAL_HEIGHT * scale;
+                canvas.style.width = `${actualWidth}px`;
+                canvas.style.height = `${actualHeight}px`;
+                canvas.style.left = `${(containerWidth - actualWidth) / 2}px`;
+                canvas.style.top = `${(containerHeight - actualHeight) / 2}px`;
+                canvas.width = FLAPPY_VIRTUAL_WIDTH;
+                canvas.height = FLAPPY_VIRTUAL_HEIGHT;
+                if (flappyGameState) flappyGameState.ctx = canvas.getContext('2d');
+                drawFlappyGame();
+            }
+            updateFlappyScale();
+            window.addEventListener('resize', updateFlappyScale);
+
+            const flappyHandleAction = (e) => {
+                if (e) e.preventDefault();
+                if (flappyGameActive && !flappyAwaitingCheckpoint && flappyGameState) {
+                    flappyGameState.birdVelocity = FLAPPY_CONFIG_GAME.jumpForce;
+                }
+            };
+            canvas.addEventListener('click', flappyHandleAction);
+            canvas.addEventListener('touchstart', flappyHandleAction, { passive: false });
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    if (flappyGameActive && !flappyAwaitingCheckpoint && flappyGameState) {
+                        flappyGameState.birdVelocity = FLAPPY_CONFIG_GAME.jumpForce;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.flappy-bet-btn').forEach(btn => {
+                btn.style.background = '#2a2a3e';
+                btn.onclick = () => {
+                    document.querySelectorAll('.flappy-bet-btn').forEach(b => b.style.background = '#2a2a3e');
+                    btn.style.background = '#f59e0b';
+                    flappySelectedBet = parseInt(btn.getAttribute('data-flappy-bet'), 10);
+                };
+            });
+
+            document.getElementById('flappyConfirmBetBtn').onclick = () => {
+                if (!flappySelectedBet) {
+                    showPopup('Select Bet', 'Please select a bet amount');
+                    return;
+                }
+                if (flappySelectedBet > gameState.balance) {
+                    showPopup('Insufficient Balance', 'Not enough balance! Purchase coins from shop.');
+                    return;
+                }
+                startFlappyGame(flappySelectedBet);
+            };
+
+            document.getElementById('flappyCashoutBtn').onclick = flappyCashout;
+            document.getElementById('flappyContinueBtn').onclick = flappyContinue;
+        }
+
+        function closeFlappyGame() {
+            if (flappyAnimationId) {
+                cancelAnimationFrame(flappyAnimationId);
+                flappyAnimationId = null;
+            }
+            if (flappyGameState && flappyGameState.wingInterval) {
+                clearInterval(flappyGameState.wingInterval);
+            }
+            if (flappyCountdownInterval) {
+                clearInterval(flappyCountdownInterval);
+                flappyCountdownInterval = null;
+            }
+            flappyGameActive = false;
+            flappyAwaitingCheckpoint = false;
+            document.getElementById('flappyOverlay').classList.remove('active');
+            document.getElementById('flappyBetPopup').style.display = 'flex';
+            document.getElementById('flappyActionPopup').style.display = 'none';
+            updateUI();
+        }
+
+        // ==================== LEADERBOARD ====================
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<div style="text-align:center;color:#666;">Loading...</div>';
+            db.ref('users').once('value').then(snap => {
+                const users = [];
+                snap.forEach(s => {
+                    const d = s.val();
+                    if (d.username) users.push({ username: d.username, totalSpent: d.totalSpent || 0, avatar: d.avatar || '👤' });
+                });
+                users.sort((a, b) => b.totalSpent - a.totalSpent);
+                list.innerHTML = users.slice(0, 7).map((u, i) => {
+                    let cls = '';
+                    if (i === 0) cls = 'gold';
+                    else if (i === 1) cls = 'silver';
+                    else if (i === 2) cls = 'bronze';
+                    return `<div class="leaderboard-item"><div class="rank-number ${cls}">${i + 1}</div><div class="leader-avatar">${u.avatar}</div><div class="leader-info"><div class="leader-name">${escapeHtml(u.username)}</div><div class="leader-win">${formatNumber(u.totalSpent)} spent</div></div></div>`;
+                }).join('');
+            });
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (10 + Math.random() * 10) + 's';
+                document.getElementById('particles').appendChild(p);
+            }
+        }
+
+        function hideSplash() {
+            const splash = document.getElementById('splashScreen');
+            splash.classList.add('fade-out');
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.getElementById('appContainer').classList.add('visible');
+            }, 500);
+        }
+
+        // ==================== CONTINUOUS BACKGROUND REFRESH ====================
+        async function silentRefresh() {
+            if (currentUser && !currentUser.isGuest) {
+                try {
+                    await loadUserData(currentUser.uid);
+                    updateUI();
+                    updateRewardUI();
+                    updateMissionsUI();
+                } catch (e) {}
+            } else if (currentUser && currentUser.isGuest) {
+                updateUI();
+                updateRewardUI();
+                updateMissionsUI();
+            }
+        }
 
         // ==================== EXPOSE GLOBALS ====================
         window.handleFirebaseLogin = handleFirebaseLogin;
@@ -2059,7 +2898,6 @@
         window.closeMissions = closeMissions;
         window.openSupport = openSupport;
         window.closeSupport = closeSupport;
-        window.openSupportBot = openSupportBot;
         window.openAdditionalSupport = openAdditionalSupport;
         window.closeAdditionalSupport = closeAdditionalSupport;
         window.sendSupportMessage = sendSupportMessage;
@@ -2091,16 +2929,36 @@
         window.selectBet = selectBet;
 
         // ==================== INITIALIZATION ====================
-        // Check URL for referral code on load
         checkURLForReferral();
-        
-        document.querySelectorAll('.bet-option').forEach(btn=>btn.addEventListener('click',()=>selectBet(parseInt(btn.getAttribute('data-bet')))));
-        document.getElementById('startBtn').addEventListener('click',startGame);
-        document.getElementById('cashoutBtn').addEventListener('click',cashout);
-        document.getElementById('continueBtn').addEventListener('click',continuePlaying);
-        createParticles(); renderLeaderboard(); leaderboardInterval=setInterval(renderLeaderboard,10000);
-        auth.onAuthStateChanged(async user=>{ if(user){ currentUser={ uid:user.uid, username:user.displayName||user.email.split('@')[0], avatar:'👤', isGuest:false, email:user.email }; await loadUserData(user.uid); updateHeader(); updateUI(); updateRewardUI(); updateMissionsUI(); hideAuthButtons(); startRewardCountdown(); resetGame(); addNotification('Welcome back!','🎉'); } });
-        setTimeout(hideSplash,1500);
+
+        document.querySelectorAll('.bet-option').forEach(btn => btn.addEventListener('click', () => selectBet(parseInt(btn.getAttribute('data-bet')))));
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('cashoutBtn').addEventListener('click', cashout);
+        document.getElementById('continueBtn').addEventListener('click', continuePlaying);
+        createParticles();
+
+        leaderboardInterval = setInterval(renderLeaderboard, 10000);
+        renderLeaderboard();
+
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                currentUser = { uid: user.uid, username: user.displayName || user.email.split('@')[0], avatar: '👤', isGuest: false, email: user.email };
+                await loadUserData(user.uid);
+                updateHeader();
+                updateUI();
+                updateRewardUI();
+                updateMissionsUI();
+                hideAuthButtons();
+                startRewardCountdown();
+                resetGame();
+                addNotification('Welcome back!', '🎉');
+            }
+        });
+        setTimeout(hideSplash, 1500);
+
+        // Start silent refresh every 3 seconds
+        setInterval(silentRefresh, 3000);
+        console.log('🔄 Silent refresh started - updating every 3 seconds');
     </script>
 </body>
 </html>
