@@ -16,21 +16,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            height: 100%;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow-x: hidden;
-            overflow-y: auto;
-            font-size: 16px;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; font-family: 'Inter', sans-serif; overflow-x: hidden; overflow-y: auto; font-size: 16px; }
         @media (max-width: 430px) { html { font-size: 14px; } }
         @media (min-width: 431px) and (max-width: 768px) { html { font-size: 15px; } }
 
@@ -199,18 +186,6 @@
             text-align: center;
         }
         .error-message.active { display: block; }
-        .success-message {
-            background: rgba(46,204,113,0.1);
-            border: 1px solid rgba(46,204,113,0.3);
-            border-radius: 12px;
-            padding: 0.8rem;
-            margin-bottom: 1.5rem;
-            color: #2ecc71;
-            font-size: 0.8rem;
-            display: none;
-            text-align: center;
-        }
-        .success-message.active { display: block; }
         .form-group { margin-bottom: 1.25rem; }
         .form-label { display: block; background: linear-gradient(90deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600; }
         .form-input {
@@ -270,13 +245,6 @@
             gap: 0.5rem;
             font-weight: 600;
         }
-        .switch-auth {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            color: #888;
-        }
-        .switch-auth span { color: #d4af37; cursor: pointer; text-decoration: underline; }
 
         .profile-modal-overlay {
             position: fixed; inset: 0; background: rgba(10,10,20,0.95); z-index: 3500;
@@ -1057,7 +1025,7 @@
                     <div class="auth-tab" onclick="window.switchAuthTab('register')">Register</div>
                 </div>
                 
-                <!-- Login Form -->
+                <!-- Login Panel -->
                 <div id="loginPanel" class="auth-form-panel active">
                     <div id="loginErrors" class="error-message"></div>
                     <div class="form-group">
@@ -1073,7 +1041,7 @@
                     <button class="guest-btn" onclick="window.guestLogin()"><span>👤</span><span>Continue as Guest</span></button>
                 </div>
                 
-                <!-- Register Form -->
+                <!-- Register Panel -->
                 <div id="registerPanel" class="auth-form-panel">
                     <div id="registerErrors" class="error-message"></div>
                     <div class="form-group">
@@ -1489,7 +1457,7 @@
     </div>
 
     <script>
-        // ==================== FIREBASE CONFIGURATION ====================
+        // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
             apiKey: "AIzaSyDUSi0mM3bYMEozFD3Ahh0vUZ5gBG1dNTU",
             authDomain: "flappy77777.firebaseapp.com",
@@ -1509,6 +1477,24 @@
         let notifications = [];
         let rewardCountdownInterval = null;
         let leaderboardInterval = null;
+        let referralCodeFromURL = null;
+
+        // Check URL for referral code
+        function checkURLForReferral() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            if (ref) {
+                referralCodeFromURL = ref.toUpperCase();
+                console.log('Referral code detected in URL:', referralCodeFromURL);
+                // Auto-fill the referral code field if register panel is open
+                setTimeout(() => {
+                    const regReferralInput = document.getElementById('regReferralCode');
+                    if (regReferralInput && !regReferralInput.value) {
+                        regReferralInput.value = referralCodeFromURL;
+                    }
+                }, 1000);
+            }
+        }
 
         const VIP_CONFIG = {
             levels: [
@@ -1552,7 +1538,7 @@
         const CARD_SUITS = [{ symbol: '♥', color: 'red' }, { symbol: '♠', color: 'black' }, { symbol: '♦', color: 'red' }, { symbol: '♣', color: 'black' }];
 
         // ==================== HELPER FUNCTIONS ====================
-        function formatNumber(num) { return num >= 1000 ? (num/1000).toFixed(1)+'K' : num; }
+        function formatNumber(num) { if(num===undefined||num===null) return '0'; if(num>=1000000) return (num/1000000).toFixed(1)+'M'; if(num>=1000) return (num/1000).toFixed(1)+'K'; return num.toString(); }
         function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 
         function showPopup(title, text) {
@@ -1618,80 +1604,66 @@
             return 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
-        async function processReferralBonus(referredUserId, depositorUsername, depositAmount) {
-            if (depositAmount < 3000) return;
-            const commission = Math.floor(depositAmount * 0.1);
-            const snapshot = await db.ref('users/' + referredUserId).once('value');
-            const referrerData = snapshot.val();
-            if (referrerData && referrerData.referralData) {
-                const newEarnings = (referrerData.referralData.totalEarnings || 0) + commission;
-                const newReferrals = [...(referrerData.referralData.referrals || [])];
-                newReferrals.push({
-                    username: depositorUsername,
-                    status: 'active',
-                    deposit: depositAmount,
-                    commission: commission,
-                    date: new Date().toISOString().split('T')[0]
+        async function applyReferralSignupBonus(newUserId, referrerCode) {
+            if (!referrerCode) return false;
+            console.log('Applying referral bonus for code:', referrerCode);
+            try {
+                const usersSnapshot = await db.ref('users').once('value');
+                let referrerId = null;
+                let referrerData = null;
+                usersSnapshot.forEach(snap => {
+                    const data = snap.val();
+                    if (data.referralData && data.referralData.code === referrerCode) {
+                        referrerId = snap.key;
+                        referrerData = data;
+                        console.log('Found referrer:', referrerId, data.username);
+                    }
                 });
-                await db.ref('users/' + referredUserId + '/referralData').update({
-                    totalEarnings: newEarnings,
-                    totalReferrals: (referrerData.referralData.totalReferrals || 0) + 1,
-                    activeReferrals: (referrerData.referralData.activeReferrals || 0) + 1,
-                    referrals: newReferrals
-                });
-                if (currentUser && currentUser.uid === referredUserId) {
-                    gameState.balance += commission;
-                    referralData.totalEarnings = newEarnings;
-                    referralData.totalReferrals++;
-                    referralData.activeReferrals++;
-                    referralData.referrals = newReferrals;
-                    await saveUserData();
-                    updateUI();
-                    addNotification(`You earned ${commission} coins from a referral deposit!`, '💰');
-                }
-            }
-        }
-
-        async function applyReferralBonus(newUserId, referrerCode) {
-            if (!referrerCode) return;
-            const usersSnapshot = await db.ref('users').once('value');
-            let referrerId = null;
-            usersSnapshot.forEach(snap => {
-                const data = snap.val();
-                if (data.referralData && data.referralData.code === referrerCode) {
-                    referrerId = snap.key;
-                }
-            });
-            if (referrerId) {
-                const bonusAmount = 50;
-                const referrerSnapshot = await db.ref('users/' + referrerId).once('value');
-                const referrerData = referrerSnapshot.val();
-                if (referrerData) {
+                
+                if (referrerId && referrerData) {
+                    const bonusAmount = 50;
                     const newEarnings = (referrerData.referralData?.totalEarnings || 0) + bonusAmount;
                     const newReferrals = [...(referrerData.referralData?.referrals || [])];
-                    newReferrals.push({
-                        username: currentUser.username,
+                    const newReferral = {
+                        username: currentUser.username || 'NewUser',
                         status: 'pending',
                         deposit: 0,
                         commission: bonusAmount,
                         date: new Date().toISOString().split('T')[0]
-                    });
+                    };
+                    newReferrals.push(newReferral);
+                    
                     await db.ref('users/' + referrerId + '/referralData').update({
                         totalEarnings: newEarnings,
                         totalReferrals: (referrerData.referralData?.totalReferrals || 0) + 1,
                         referrals: newReferrals
                     });
+                    
+                    // Also update the referrer's balance
+                    const referrerBalance = (referrerData.balance || 0) + bonusAmount;
+                    await db.ref('users/' + referrerId + '/balance').set(referrerBalance);
+                    
+                    console.log('Referral bonus applied successfully!');
+                    
+                    // If the referrer is currently logged in, update their local data
                     if (currentUser && currentUser.uid === referrerId) {
                         gameState.balance += bonusAmount;
                         referralData.totalEarnings = newEarnings;
-                        referralData.totalReferrals++;
+                        referralData.totalReferrals = (referrerData.referralData?.totalReferrals || 0) + 1;
                         referralData.referrals = newReferrals;
                         await saveUserData();
                         updateUI();
-                        addNotification(`You received ${bonusAmount} coins as referral signup bonus!`, '🎉');
+                        addNotification(`🎉 You received ${bonusAmount} coins as referral signup bonus!`, '💰');
+                        showPopup('Referral Bonus!', `You earned ${bonusAmount} coins from your referral!`);
                     }
+                    return true;
+                } else {
+                    console.log('Referrer not found for code:', referrerCode);
                 }
+            } catch (error) {
+                console.error('Referral bonus error:', error);
             }
+            return false;
         }
 
         // ==================== AUTH FUNCTIONS ====================
@@ -1706,7 +1678,6 @@
                 registerTab.classList.remove('active');
                 loginPanel.classList.add('active');
                 registerPanel.classList.remove('active');
-                // Clear errors
                 document.getElementById('loginErrors').classList.remove('active');
                 document.getElementById('registerErrors').classList.remove('active');
             } else {
@@ -1716,6 +1687,13 @@
                 registerPanel.classList.add('active');
                 document.getElementById('loginErrors').classList.remove('active');
                 document.getElementById('registerErrors').classList.remove('active');
+                // Auto-fill referral code from URL if available
+                if (referralCodeFromURL) {
+                    const regInput = document.getElementById('regReferralCode');
+                    if (regInput && !regInput.value) {
+                        regInput.value = referralCodeFromURL;
+                    }
+                }
             }
         }
 
@@ -1769,7 +1747,7 @@
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value.trim();
             const confirm = document.getElementById('regConfirmPassword').value.trim();
-            const referrerCode = document.getElementById('regReferralCode').value.trim();
+            let referrerCode = document.getElementById('regReferralCode').value.trim().toUpperCase();
             const errorDiv = document.getElementById('registerErrors');
             
             errorDiv.classList.remove('active');
@@ -1793,6 +1771,11 @@
                 return;
             }
             
+            // If no referral code in input but we have one from URL
+            if (!referrerCode && referralCodeFromURL) {
+                referrerCode = referralCodeFromURL;
+            }
+            
             try {
                 const result = await auth.createUserWithEmailAndPassword(email, password);
                 await result.user.updateProfile({ displayName: username });
@@ -1808,7 +1791,7 @@
                 const referralCode = generateReferralCode();
                 referralData = { 
                     code: referralCode, 
-                    link: window.location.href + '?ref=' + referralCode, 
+                    link: window.location.origin + window.location.pathname + '?ref=' + referralCode, 
                     totalReferrals: 0, 
                     activeReferrals: 0, 
                     totalEarnings: 0, 
@@ -1836,7 +1819,14 @@
                 };
                 
                 await saveUserData();
-                await applyReferralBonus(currentUser.uid, referrerCode);
+                
+                // Apply referral signup bonus if a referral code was provided
+                if (referrerCode) {
+                    const bonusApplied = await applyReferralSignupBonus(currentUser.uid, referrerCode);
+                    if (bonusApplied) {
+                        addNotification('Referral bonus applied!', '🎉');
+                    }
+                }
                 
                 updateHeader();
                 updateUI();
@@ -1966,10 +1956,10 @@
         function updateVIPLevel() { let newLevel=0; if(gameState.totalSpent>=640000) newLevel=5; else if(gameState.totalSpent>=320000) newLevel=4; else if(gameState.totalSpent>=160000) newLevel=3; else if(gameState.totalSpent>=80000) newLevel=2; else if(gameState.totalSpent>=40000) newLevel=1; if(newLevel>gameState.vipLevel){ gameState.vipLevel=newLevel; addNotification(`VIP Level ${newLevel} reached!`,'👑'); showPopup('VIP Level Up!',`You reached VIP ${newLevel}!`); } }
 
         // ==================== REFERRAL UI ====================
-        function loadReferralData() { if(!currentUser) return; document.getElementById('referralCodeDisplay').innerText = referralData.code || 'SHUFFLE786'; document.getElementById('referralLinkInput').value = referralData.link || window.location.href; document.getElementById('totalReferrals').innerText = referralData.totalReferrals; document.getElementById('totalEarnings').innerText = formatNumber(referralData.totalEarnings); document.getElementById('activeReferrals').innerText = referralData.activeReferrals; const body = document.getElementById('referralsBody'); if(referralData.referrals.length===0) body.innerHTML = '<tr><td colspan="5">No referrals yet</td></tr>'; else body.innerHTML = referralData.referrals.map(r => `<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
+        function loadReferralData() { if(!currentUser) return; document.getElementById('referralCodeDisplay').innerText = referralData.code || 'SHUFFLE786'; document.getElementById('referralLinkInput').value = referralData.link || window.location.origin + window.location.pathname + '?ref=' + (referralData.code || 'SHUFFLE786'); document.getElementById('totalReferrals').innerText = referralData.totalReferrals; document.getElementById('totalEarnings').innerText = formatNumber(referralData.totalEarnings); document.getElementById('activeReferrals').innerText = referralData.activeReferrals; const body = document.getElementById('referralsBody'); if(referralData.referrals.length===0) body.innerHTML = '<tr><td colspan="5">No referrals yet</td></tr>'; else body.innerHTML = referralData.referrals.map(r => `<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
         function copyReferralCode() { navigator.clipboard.writeText(referralData.code || 'SHUFFLE786'); showPopup('Copied!','Referral code copied'); }
-        function copyReferralLink() { navigator.clipboard.writeText(referralData.link || window.location.href); showPopup('Copied!','Referral link copied'); }
-        function filterReferrals(filter) { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); if(event?.target) event.target.classList.add('active'); let filtered = referralData.referrals; if(filter==='active') filtered = referralData.referrals.filter(r=>r.status==='active'); else if(filter==='pending') filtered = referralData.referrals.filter(r=>r.status!=='active'); document.getElementById('referralsBody').innerHTML = filtered.length===0 ? '<tr><td colspan="5">No referrals found</td></table>' : filtered.map(r=>`<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
+        function copyReferralLink() { navigator.clipboard.writeText(referralData.link || window.location.origin + window.location.pathname + '?ref=' + (referralData.code || 'SHUFFLE786')); showPopup('Copied!','Referral link copied'); }
+        function filterReferrals(filter) { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); if(event?.target) event.target.classList.add('active'); let filtered = referralData.referrals; if(filter==='active') filtered = referralData.referrals.filter(r=>r.status==='active'); else if(filter==='pending') filtered = referralData.referrals.filter(r=>r.status!=='active'); document.getElementById('referralsBody').innerHTML = filtered.length===0 ? '<tr><td colspan="5">No referrals found</td></tr>' : filtered.map(r=>`<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
 
         // ==================== NAVIGATION ====================
         function openReferral() { document.getElementById('referralSection').classList.add('active'); loadReferralData(); }
@@ -2000,7 +1990,7 @@
         function openNotificationPanel() { document.getElementById('notificationPanel').classList.add('open'); renderNotifications(); }
         function closeNotificationPanel() { document.getElementById('notificationPanel').classList.remove('open'); }
 
-        // ==================== GAME LOGIC ====================
+        // ==================== GAME LOGIC (ORIGINAL - UNCHANGED) ====================
         function enterGame() { if(!currentUser) openAuthModal(); else { resetGame(); document.getElementById('gameView').classList.add('active'); } }
         function exitGame() { resetGame(); document.getElementById('gameView').classList.remove('active'); }
         function selectBet(amount) { if(gameState.isPlaying) return; if(amount>gameState.balance) showPopup('Insufficient','Not enough coins!'); else { gameState.currentBet=amount; document.querySelectorAll('.bet-option').forEach(b=>b.classList.remove('selected')); document.querySelector(`.bet-option[data-bet="${amount}"]`).classList.add('selected'); } }
@@ -2106,6 +2096,9 @@
         window.selectBet = selectBet;
 
         // ==================== INITIALIZATION ====================
+        // Check URL for referral code on load
+        checkURLForReferral();
+        
         document.querySelectorAll('.bet-option').forEach(btn=>btn.addEventListener('click',()=>selectBet(parseInt(btn.getAttribute('data-bet')))));
         document.getElementById('startBtn').addEventListener('click',startGame);
         document.getElementById('cashoutBtn').addEventListener('click',cashout);
