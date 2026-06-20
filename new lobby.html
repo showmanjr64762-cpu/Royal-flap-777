@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Casino Shuffle 786 - Premium Card Game + Flappy Checkpoint</title>
+    <title>Flappy Checkpoint 786 - Premium Card Game + Flappy Checkpoint</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a'/%3E%3Ctext x='50' y='72' font-size='65' text-anchor='middle' fill='%23ffd700' font-family='Arial'%3E♛%3C/text%3E%3C/svg%3E">
     
@@ -398,6 +398,19 @@
         .purchase-amount { font-family: 'Playfair Display', serif; font-size: 2rem; color: #d4af37; font-weight: 900; }
         .payment-number { font-size: 1.5rem; font-weight: bold; color: #d4af37; letter-spacing: 2px; margin: 0.5rem 0; }
         .payment-note { background: rgba(212,175,55,0.05); padding: 0.8rem; border-radius: 10px; margin-top: 0.8rem; font-size: 0.7rem; }
+        .payment-notice {
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.75rem;
+            color: #ff6b6b;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .payment-notice strong { color: #ffd700; }
+        .payment-notice .heart { color: #ff6b6b; }
         .submit-form { background: rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.1); border-radius: 16px; padding: 1.5rem; }
         .submit-form h3 { background: linear-gradient(90deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; text-align: center; }
         .submit-btn {
@@ -497,6 +510,7 @@
         }
         .offer-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
         .offer-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #d4af37, #9b59b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .offer-desc { font-size: 0.65rem; color: #888; margin-top: 0.2rem; }
 
         .vip-info-card, .reward-card, .mission-card, .shop-card, .referral-stats-card, .referral-code-card, .commission-rates-card, .referral-list-card {
             background: linear-gradient(145deg, rgba(25,25,40,0.8), rgba(15,15,25,0.9));
@@ -1153,6 +1167,21 @@
         .flappy-confirm-btn:active { transform: scale(0.97); }
         .flappy-info-text { font-size: 11px; color: #b9e6ff; margin-top: 15px; font-family: monospace; }
         
+        .flappy-back-to-lobby-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 30px;
+            padding: 8px 16px;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.2s;
+            margin-top: 10px;
+            width: 80%;
+        }
+        .flappy-back-to-lobby-btn:active { transform: scale(0.95); background: rgba(255,215,0,0.1); }
+        
         .flappy-action-popup {
             position: fixed;
             top: 50%;
@@ -1213,6 +1242,56 @@
         .flappy-info-text { font-size: 11px; color: #b9e6ff; margin-top: 15px; }
         .flappy-balance-display { background: rgba(0,0,0,0.5); border-radius: 40px; padding: 10px 20px; display: inline-block; margin: 12px 0; }
         .leaderboard-hidden { display: none !important; }
+        .mission-progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin: 0.5rem 0; }
+        .mission-progress-fill { height: 100%; background: linear-gradient(90deg, #d4af37, #9b59b6); width: 0%; transition: width 0.3s; border-radius: 3px; }
+        .mission-progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-top: 0.2rem; }
+        .mission-status { font-size: 0.65rem; font-weight: 600; }
+        .mission-status.completed { color: #2ecc71; }
+        .mission-status.in-progress { color: #ffd700; }
+        .mission-status.claimed { color: #888; }
+
+        /* ===== Floating Notification (top-right) - CLICKABLE ===== */
+        .floating-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #d4af37;
+            border-radius: 20px;
+            padding: 16px 20px;
+            max-width: 280px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            z-index: 9999;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.3);
+            animation: slideInRight 0.5s ease;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            pointer-events: auto;
+        }
+        .floating-notification:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(212,175,55,0.4);
+        }
+        .floating-notification .notif-title {
+            font-weight: 700;
+            background: linear-gradient(135deg, #d4af37, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.1rem;
+        }
+        .floating-notification .notif-body {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 4px;
+        }
+        @keyframes slideInRight {
+            0% { transform: translateX(120px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 480px) {
+            .floating-notification { right: 10px; left: 10px; max-width: none; top: 70px; }
+        }
     </style>
 </head>
 <body>
@@ -1223,7 +1302,7 @@
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
             <div class="splash-logo"></div>
-            <div class="splash-title">Casino Shuffle 786</div>
+            <div class="splash-title">Flappy Checkpoint 786</div>
             <div class="splash-subtitle">PREMIUM CASINO EXPERIENCE</div>
             <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
         </div>
@@ -1235,7 +1314,7 @@
             <button class="close-auth" onclick="window.closeAuth()">×</button>
             <div class="auth-header">
                 <div class="auth-logo">♛</div>
-                <div class="auth-title">Casino Shuffle 786</div>
+                <div class="auth-title">Flappy Checkpoint 786</div>
                 <div class="auth-subtitle">Login to your account</div>
             </div>
             <div class="auth-content">
@@ -1369,7 +1448,7 @@
         </div>
     </div>
 
-    <!-- Purchase Page -->
+    <!-- Purchase Page with Safety Notice -->
     <div class="purchase-page" id="purchasePage">
         <div class="purchase-header">
             <button class="purchase-back-btn" onclick="window.closePurchasePage()">← Back</button>
@@ -1386,6 +1465,18 @@
                 <div class="payment-number">03420095235</div>
                 <div class="payment-note">After sending payment, enter your number below and submit.</div>
             </div>
+            
+            <!-- Safety Notice -->
+            <div class="payment-notice">
+                <strong>⚠️ Important Notice:</strong><br>
+                Recently some companies caught payment gateways red handed stealing users data.<br><br>
+                That's why this time we used a <strong>direct payment system</strong> between the game and users.<br><br>
+                Because your safety is our priority. Just send your selected deposit amount to this<br>
+                <strong>Opay wallet</strong> and the coins will be added to your account directly.<br><br>
+                Stay safe from fraud!<br>
+                <span class="heart">❤️</span> Game Owner: <strong>Kursheed Hussain</strong> and Team <span class="heart">❤️❤️❤️</span>
+            </div>
+            
             <div class="submit-form">
                 <h3>Confirm Your Purchase</h3>
                 <input type="tel" id="purchasePhoneNumber" class="form-input" placeholder="03xxxxxxxxx" maxlength="11">
@@ -1399,13 +1490,13 @@
     <div class="popup-overlay" id="downloadPopup">
         <div class="popup-content">
             <div class="popup-icon">📱</div>
-            <div class="popup-title">Download Casino Shuffle 786 APK</div>
+            <div class="popup-title">Download Flappy Checkpoint 786 APK</div>
             <div class="popup-text">
                 <p>Click below to download the APK:</p>
                 <div class="download-link-container">
                     <button class="copy-link-btn" style="width:100%" onclick="window.downloadApk()"><i class="fas fa-download"></i> Download APK</button>
                 </div>
-                <p style="margin-top: 10px; font-size: 0.75rem; color: #d4af37;">⚠️ APK will download directly</p>
+                <p style="margin-top: 10px; font-size: 0.75rem; color: #d4af37;">⚠️ APK will download from MediaFire</p>
             </div>
             <div class="popup-btn-group">
                 <button class="popup-btn popup-btn-confirm" onclick="window.closeDownloadPopup()">Close</button>
@@ -1474,10 +1565,28 @@
         </div>
         <div class="fullscreen-content">
             <div class="offers-grid">
-                <div class="offer-card" onclick="window.openDailyRewards()"><div class="offer-badge">DAILY</div><div class="offer-icon">🎁</div><div class="offer-title">Daily Rewards</div></div>
-                <div class="offer-card" onclick="window.openMissions()"><div class="offer-badge">NEW</div><div class="offer-icon">🎯</div><div class="offer-title">Missions</div></div>
-                <div class="offer-card" onclick="window.openVIPPopup()"><div class="offer-icon">👑</div><div class="offer-title">VIP Club</div></div>
-                <div class="offer-card" onclick="window.openSupport()"><div class="offer-icon">🎧</div><div class="offer-title">Support</div></div>
+                <div class="offer-card" onclick="window.openDailyRewards()">
+                    <div class="offer-badge">DAILY</div>
+                    <div class="offer-icon">📅</div>
+                    <div class="offer-title">Daily Rewards</div>
+                    <div class="offer-desc">Claim your daily bonus</div>
+                </div>
+                <div class="offer-card" onclick="window.openMissions()">
+                    <div class="offer-badge">🎯</div>
+                    <div class="offer-icon">🎯</div>
+                    <div class="offer-title">Missions</div>
+                    <div class="offer-desc">Complete challenges and earn big</div>
+                </div>
+                <div class="offer-card" onclick="window.openVIPPopup()">
+                    <div class="offer-icon">👑</div>
+                    <div class="offer-title">VIP Club</div>
+                    <div class="offer-desc">Check VIP benefits</div>
+                </div>
+                <div class="offer-card" onclick="window.openSupport()">
+                    <div class="offer-icon">🎧</div>
+                    <div class="offer-title">Support</div>
+                    <div class="offer-desc">24/7 customer support</div>
+                </div>
             </div>
         </div>
     </div>
@@ -1502,7 +1611,7 @@
         </div>
     </div>
 
-    <!-- Missions Section -->
+    <!-- Missions Section - Hard Missions -->
     <div class="fullscreen-section" id="missionsSection">
         <div class="fullscreen-header">
             <button class="back-btn" onclick="window.closeMissions()">← Back</button>
@@ -1525,11 +1634,15 @@
     <div class="fullscreen-section" id="additionalSupportSection">
         <div class="fullscreen-header">
             <button class="back-btn" onclick="window.closeAdditionalSupport()">← Back</button>
-            <span class="fullscreen-title">📝 Contact Support</span>
+            <span class="fullscreen-title">📝 Support Tickets</span>
         </div>
         <div class="fullscreen-content">
-            <textarea id="supportMessage" class="form-input" placeholder="Describe your issue..." rows="6"></textarea>
-            <button class="auth-btn" onclick="window.sendSupportMessage()">Send Message</button>
+            <div id="supportTicketList" style="margin-bottom:1.5rem;"></div>
+            <div class="ticket-form">
+                <h3>Send Message to Admin</h3>
+                <textarea id="supportMessage" class="form-input" placeholder="Describe your issue..." rows="6"></textarea>
+                <button class="auth-btn" onclick="window.sendSupportMessage()">Send Message</button>
+            </div>
         </div>
     </div>
 
@@ -1650,7 +1763,7 @@
         <button class="play-again-btn" onclick="window.resetGame()">TRY AGAIN</button>
     </div>
 
-    <!-- ===== ORIGINAL FLAPPY CHECKPOINT GAME ===== -->
+    <!-- ===== ORIGINAL FLAPPY CHECKPOINT GAME WITH BACK TO LOBBY BUTTON ===== -->
     <div class="flappy-overlay" id="flappyOverlay">
         <button class="flappy-back-btn" onclick="window.closeFlappyGame()">← Back to Lobby</button>
         <div class="flappy-container">
@@ -1670,6 +1783,7 @@
                     <button class="flappy-bet-btn" data-flappy-bet="500">500</button>
                 </div>
                 <button id="flappyConfirmBetBtn" class="flappy-confirm-btn">✔ START FLYING</button>
+                <button class="flappy-back-to-lobby-btn" onclick="window.closeFlappyGame()">← Back to Lobby</button>
                 <div class="flappy-info-text">✨ EVERY 7th PIPE = GOLDEN CHECKPOINT ✨<br>Harder difficulty: Smaller gaps, faster pipes! Pass it → Multiplier increases!</div>
             </div>
         </div>
@@ -1708,6 +1822,7 @@
         let notifications = [];
         let rewardCountdownInterval = null;
         let referralCodeFromURL = null;
+        let supportTickets = [];
 
         function checkURLForReferral() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1743,7 +1858,8 @@
             isPlaying: false, canFlip: false, firstCard: null, secondCard: null,
             cards: [], matchedPairs: 0, goldenCardsFound: [],
             totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0,
-            firstWagerProgress: 0, hasCompletedFirstWager: false
+            firstWagerProgress: 0, hasCompletedFirstWager: false,
+            goldenHits: 0
         };
 
         let rewardState = {
@@ -1751,11 +1867,12 @@
             dailyStreak: 0, weeklyStreak: 0
         };
 
+        // HARD MISSIONS - Lower rewards
         let missionsState = {
-            dailyLogin: { completed: false, claimed: false, progress: 0, target: 1 },
-            firstDeposit: { completed: false, claimed: false, progress: 0, target: 1 },
-            gamesPlayed: { completed: false, claimed: false, progress: 0, target: 10 },
-            bigWin: { completed: false, claimed: false, progress: 0, target: 5 }
+            casinoMaster: { completed: false, claimed: false, progress: 0, target: 100 },
+            winningStreak: { completed: false, claimed: false, progress: 0, target: 50 },
+            goldenHunter: { completed: false, claimed: false, progress: 0, target: 10 },
+            coinCollector: { completed: false, claimed: false, progress: 0, target: 200000 }
         };
 
         let referralData = {
@@ -1803,6 +1920,7 @@
                 balance: gameState.balance, totalBets: gameState.totalBets, totalWins: gameState.totalWins,
                 totalSpent: gameState.totalSpent, vipLevel: gameState.vipLevel,
                 firstWagerProgress: gameState.firstWagerProgress, hasCompletedFirstWager: gameState.hasCompletedFirstWager,
+                goldenHits: gameState.goldenHits,
                 rewards: rewardState, missions: missionsState, referralData: referralData
             };
             await db.ref('users/' + currentUser.uid).set(userData);
@@ -1819,6 +1937,7 @@
                 gameState.vipLevel = data.vipLevel || 0;
                 gameState.firstWagerProgress = data.firstWagerProgress || 0;
                 gameState.hasCompletedFirstWager = data.hasCompletedFirstWager || false;
+                gameState.goldenHits = data.goldenHits || 0;
                 if (data.rewards) rewardState = { ...rewardState, ...data.rewards };
                 if (data.missions) missionsState = { ...missionsState, ...data.missions };
                 if (data.referralData) referralData = { ...referralData, ...data.referralData };
@@ -1944,6 +2063,8 @@
                 resetGame();
                 addNotification('Welcome back!', '🎉');
                 showPopup('Welcome back!', `Logged in as ${currentUser.username}`);
+                setupRealtimeListeners();
+                loadSupportTickets();
             } catch (error) {
                 let errorMsg = error.message;
                 if (error.code === 'auth/user-not-found') errorMsg = 'No account found with this email';
@@ -2014,7 +2135,8 @@
                     isPlaying: false, canFlip: false, firstCard: null, secondCard: null,
                     cards: [], matchedPairs: 0, goldenCardsFound: [],
                     totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0,
-                    firstWagerProgress: 0, hasCompletedFirstWager: false 
+                    firstWagerProgress: 0, hasCompletedFirstWager: false,
+                    goldenHits: 0
                 };
                 
                 rewardState = { 
@@ -2023,10 +2145,10 @@
                 };
                 
                 missionsState = { 
-                    dailyLogin: { completed: true, claimed: false, progress: 1, target: 1 },
-                    firstDeposit: { completed: false, claimed: false, progress: 0, target: 1 },
-                    gamesPlayed: { completed: false, claimed: false, progress: 0, target: 10 },
-                    bigWin: { completed: false, claimed: false, progress: 0, target: 5 }
+                    casinoMaster: { completed: false, claimed: false, progress: 0, target: 100 },
+                    winningStreak: { completed: false, claimed: false, progress: 0, target: 50 },
+                    goldenHunter: { completed: false, claimed: false, progress: 0, target: 10 },
+                    coinCollector: { completed: false, claimed: false, progress: 0, target: 200000 }
                 };
                 
                 await saveUserData();
@@ -2047,6 +2169,8 @@
                 startRewardCountdown();
                 addNotification('Welcome! You can purchase coins to start playing!', '🎁');
                 showPopup('Welcome!', 'Account created successfully! You start with 0 coins. Purchase coins to play!');
+                setupRealtimeListeners();
+                loadSupportTickets();
                 
             } catch (error) {
                 let errorMsg = error.message;
@@ -2064,7 +2188,7 @@
 
         function guestLogin() {
             currentUser = { uid: 'GUEST_' + Date.now(), username: 'Guest_' + Math.floor(Math.random()*9999), avatar: '👤', isGuest: true };
-            gameState = { balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0, isPlaying: false, canFlip: false, firstCard: null, secondCard: null, cards: [], matchedPairs: 0, goldenCardsFound: [], totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0, firstWagerProgress: 0, hasCompletedFirstWager: false };
+            gameState = { balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0, isPlaying: false, canFlip: false, firstCard: null, secondCard: null, cards: [], matchedPairs: 0, goldenCardsFound: [], totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0, firstWagerProgress: 0, hasCompletedFirstWager: false, goldenHits: 0 };
             updateHeader(); updateUI(); updateRewardUI(); updateMissionsUI(); hideAuthButtons(); closeAuth(); startRewardCountdown(); addNotification('Guest mode with 0 coins!', '👤'); showPopup('Guest Mode', 'You are playing as guest with 0 coins. Register or purchase coins to play!');
         }
 
@@ -2073,7 +2197,7 @@
             if (rewardCountdownInterval) clearInterval(rewardCountdownInterval);
             try { await auth.signOut(); } catch(e) {}
             currentUser = null;
-            gameState = { balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0, isPlaying: false, canFlip: false, firstCard: null, secondCard: null, cards: [], matchedPairs: 0, goldenCardsFound: [], totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0, firstWagerProgress: 0, hasCompletedFirstWager: false };
+            gameState = { balance: 0, currentBet: 0, currentWin: 0, multiplier: 1, pairsMatched: 0, isPlaying: false, canFlip: false, firstCard: null, secondCard: null, cards: [], matchedPairs: 0, goldenCardsFound: [], totalBets: 0, totalWins: 0, totalSpent: 0, vipLevel: 0, firstWagerProgress: 0, hasCompletedFirstWager: false, goldenHits: 0 };
             updateHeader(); updateUI(); showAuthButtons(); resetGame(); showPopup('Logged out', 'You have been logged out'); openAuthModal();
         }
 
@@ -2159,7 +2283,6 @@
                 return;
             }
             
-            // Send withdrawal request to Firebase for admin approval
             const withdrawalData = {
                 userId: currentUser.uid,
                 username: currentUser.username,
@@ -2182,7 +2305,7 @@
             }
         }
 
-        // ==================== SHOP & PURCHASE (SEND TO ADMIN) ====================
+        // ==================== SHOP & PURCHASE ====================
         function renderShopGrid() {
             const items = [{amount:100,coins:100,bonus:5},{amount:500,coins:500,bonus:25},{amount:1000,coins:1000,bonus:50,featured:true},{amount:3000,coins:3000,bonus:150},{amount:5000,coins:5000,bonus:250},{amount:10000,coins:10000,bonus:500}];
             document.getElementById('shopGrid').innerHTML = items.map(i => `<div class="shop-card ${i.featured?'featured':''}" onclick="window.openPurchasePage(${i.amount},${i.coins})"><div class="shop-icon">💰</div><div class="shop-amount">₨${i.amount}</div><div class="shop-coins">${formatNumber(i.coins)} Coins</div><div class="shop-bonus">+${i.bonus} Bonus</div><button class="shop-btn">BUY NOW</button></div>`).join('');
@@ -2202,7 +2325,6 @@
             const bonusCoins = Math.floor(currentPurchaseCoins * 0.025);
             const totalCoins = currentPurchaseCoins + bonusCoins;
             
-            // Send deposit request to Firebase for admin approval
             const depositData = {
                 userId: currentUser.uid,
                 username: currentUser.username,
@@ -2228,27 +2350,439 @@
             }
         }
 
-        // ==================== REWARDS ====================
-        function canClaimDaily() { if(!currentUser) return false; if(!rewardState.lastDailyClaim) return true; const last=new Date(rewardState.lastDailyClaim), today=new Date(); return last.getDate()!==today.getDate() || last.getMonth()!==today.getMonth() || last.getFullYear()!==today.getFullYear(); }
-        function canClaimWeekly() { if(!currentUser || !rewardState.lastWeeklyClaim) return !rewardState.lastWeeklyClaim; const diff=Math.floor((new Date()-new Date(rewardState.lastWeeklyClaim))/(1000*60*60*24)); return diff>=7; }
-        function canClaimMonthly() { if(!currentUser || !rewardState.lastMonthlyClaim) return !rewardState.lastMonthlyClaim; const last=new Date(rewardState.lastMonthlyClaim), today=new Date(); return last.getMonth()!==today.getMonth() || last.getFullYear()!==today.getFullYear(); }
-        function startRewardCountdown() { if(rewardCountdownInterval) clearInterval(rewardCountdownInterval); rewardCountdownInterval=setInterval(updateRewardUI,1000); }
-        function updateRewardUI() { const vip=VIP_CONFIG.levels[gameState.vipLevel]; document.getElementById('dailyRewardAmount').innerText=vip.dailyReward; document.getElementById('weeklyRewardAmount').innerText=vip.weeklyReward; document.getElementById('monthlyRewardAmount').innerText=vip.monthlyReward; const dailyBtn=document.getElementById('claimDailyBtn'); if(dailyBtn){ if(canClaimDaily()){ dailyBtn.disabled=false; dailyBtn.style.opacity='1'; document.getElementById('dailyCooldown').innerHTML='Ready!'; }else{ dailyBtn.disabled=true; dailyBtn.style.opacity='0.5'; document.getElementById('dailyCooldown').innerHTML='Tomorrow'; } } }
-        async function claimDailyReward() { if(!currentUser) openAuthModal(); else if(!canClaimDaily()) showPopup('Already Claimed','Come back tomorrow'); else { const reward=VIP_CONFIG.levels[gameState.vipLevel].dailyReward; gameState.balance+=reward; rewardState.lastDailyClaim=new Date().toISOString(); rewardState.dailyStreak=(rewardState.dailyStreak||0)+1; updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); updateRewardUI(); addNotification(`Claimed ${reward} daily coins!`,'🎁'); showPopup('Daily Reward!',`+${reward} coins!`); } }
-        async function claimWeeklyReward() { if(!currentUser) openAuthModal(); else if(!canClaimWeekly()) showPopup('Already Claimed','Check back next week'); else { const reward=VIP_CONFIG.levels[gameState.vipLevel].weeklyReward; gameState.balance+=reward; rewardState.lastWeeklyClaim=new Date().toISOString(); updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); updateRewardUI(); addNotification(`Claimed ${reward} weekly coins!`,'🎁'); showPopup('Weekly Reward!',`+${reward} coins!`); } }
-        async function claimMonthlyReward() { if(!currentUser) openAuthModal(); else if(!canClaimMonthly()) showPopup('Already Claimed','Check back next month'); else { const reward=VIP_CONFIG.levels[gameState.vipLevel].monthlyReward; gameState.balance+=reward; rewardState.lastMonthlyClaim=new Date().toISOString(); updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); updateRewardUI(); addNotification(`Claimed ${reward} monthly coins!`,'🎁'); showPopup('Monthly Reward!',`+${reward} coins!`); } }
+        // ==================== SUPPORT TICKETS ====================
+        function loadSupportTickets() {
+            db.ref('tickets').orderByChild('timestamp').on('value', snap => {
+                supportTickets = [];
+                snap.forEach(child => {
+                    const ticket = child.val();
+                    ticket.id = child.key;
+                    supportTickets.push(ticket);
+                });
+                supportTickets.reverse();
+                renderSupportTickets();
+            });
+        }
 
-        // ==================== MISSIONS ====================
-        function updateMissionsUI() { const missions=[{id:'dailyLogin',title:'Daily Login',desc:'Login daily',reward:10,icon:'🎁'},{id:'firstDeposit',title:'First Deposit',desc:'Make first deposit',reward:50,icon:'💰'},{id:'gamesPlayed',title:'Betting Enthusiast',desc:'Place '+missionsState.gamesPlayed.target+' bets',reward:100,icon:'🎮',progress:missionsState.gamesPlayed.progress,target:missionsState.gamesPlayed.target},{id:'bigWin',title:'Winner\'s Circle',desc:'Win '+missionsState.bigWin.target+' games',reward:200,icon:'🏆',progress:missionsState.bigWin.progress,target:missionsState.bigWin.target}]; document.getElementById('missionsContent').innerHTML = missions.map(m=>{ const data=missionsState[m.id]; const isCompleted=data?.completed, isClaimed=data?.claimed; let progressText='',btnHtml=''; if(m.progress!==undefined){ const pct=(m.progress/m.target*100); progressText=`<div class="mission-progress"><div class="mission-progress-bar" style="width:${pct}%"></div><span>${m.progress}/${m.target}</span></div>`; } if(isClaimed) btnHtml='<button class="mission-btn claimed" disabled>✓ Claimed</button>'; else if(isCompleted) btnHtml=`<button class="mission-btn available" onclick="window.claimMissionReward('${m.id}',${m.reward})">🎁 Claim Reward</button>`; else btnHtml='<button class="mission-btn locked" disabled>🔒 Locked</button>'; return `<div class="mission-card"><div class="mission-header"><span class="mission-icon">${m.icon}</span><span class="mission-title">${m.title}</span></div><div class="mission-desc">${m.desc}</div>${progressText}<div class="mission-reward">🎁 ${m.reward} Coins</div>${btnHtml}</div>`; }).join(''); }
-        async function claimMissionReward(missionId,reward) { if(!currentUser) openAuthModal(); else if(!missionsState[missionId]?.completed) showPopup('Not Completed','Complete mission first'); else if(missionsState[missionId]?.claimed) showPopup('Already Claimed','Reward already taken'); else { gameState.balance+=reward; missionsState[missionId].claimed=true; updateUI(); if(currentUser && !currentUser.isGuest) await saveUserData(); updateMissionsUI(); addNotification(`Claimed ${reward} mission coins!`,'🎯'); showPopup('Mission Reward!',`+${reward} coins!`); } }
-        function checkAndUpdateMissions() { let updated=false; if(!missionsState.gamesPlayed.completed && gameState.totalBets>=missionsState.gamesPlayed.target){ missionsState.gamesPlayed.completed=true; updated=true; } else if(!missionsState.gamesPlayed.completed) missionsState.gamesPlayed.progress=gameState.totalBets; if(!missionsState.bigWin.completed && gameState.totalWins>=missionsState.bigWin.target){ missionsState.bigWin.completed=true; updated=true; } else if(!missionsState.bigWin.completed) missionsState.bigWin.progress=gameState.totalWins; if(updated){ updateMissionsUI(); if(currentUser && !currentUser.isGuest) saveUserData(); showPopup('Mission Update!','A mission completed!'); } }
-        function updateVIPLevel() { let newLevel=0; if(gameState.totalSpent>=640000) newLevel=5; else if(gameState.totalSpent>=320000) newLevel=4; else if(gameState.totalSpent>=160000) newLevel=3; else if(gameState.totalSpent>=80000) newLevel=2; else if(gameState.totalSpent>=40000) newLevel=1; if(newLevel>gameState.vipLevel){ gameState.vipLevel=newLevel; addNotification(`VIP Level ${newLevel} reached!`,'👑'); showPopup('VIP Level Up!',`You reached VIP ${newLevel}!`); } }
+        function renderSupportTickets() {
+            const container = document.getElementById('supportTicketList');
+            if (!container) return;
+            
+            const userTickets = supportTickets.filter(t => t.userId === currentUser?.uid);
+            if (userTickets.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#666;padding:1rem;">No support tickets</div>';
+                return;
+            }
+            
+            let html = '';
+            userTickets.forEach(ticket => {
+                html += `<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                        <span style="color:#d4af37;font-weight:600;">Ticket #${ticket.id.substring(0,8)}</span>
+                        <span class="status ${ticket.status === 'pending' ? 'pending' : 'approved'}">${ticket.status}</span>
+                    </div>
+                    <div style="color:#aaa;font-size:0.85rem;margin-bottom:0.5rem;">${escapeHtml(ticket.message)}</div>
+                    <div style="font-size:0.7rem;color:#666;">Sent: ${new Date(ticket.timestamp).toLocaleString()}</div>`;
+                
+                if (ticket.replies && ticket.replies.length > 0) {
+                    html += `<div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.05);">`;
+                    ticket.replies.forEach(reply => {
+                        const from = reply.from === 'admin' ? 'Admin' : 'You';
+                        const color = reply.from === 'admin' ? '#d4af37' : '#00ff88';
+                        html += `<div style="font-size:0.8rem;margin-top:0.3rem;">
+                            <span style="color:${color};font-weight:600;">${from}:</span> 
+                            <span style="color:#aaa;">${escapeHtml(reply.message)}</span>
+                            <span style="font-size:0.6rem;color:#666;"> ${new Date(reply.timestamp).toLocaleString()}</span>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function sendSupportMessage() { 
+            const msg = document.getElementById('supportMessage').value.trim(); 
+            if(!msg) showPopup('Error','Enter message'); 
+            else if(!currentUser) showPopup('Error','Please login'); 
+            else { 
+                const ticketData = { 
+                    userId: currentUser.uid, 
+                    username: currentUser.username, 
+                    message: msg, 
+                    timestamp: new Date().toISOString(), 
+                    status: 'pending',
+                    replies: []
+                };
+                try { 
+                    await db.ref('tickets').push().set(ticketData); 
+                    addNotification('Support message sent','📧'); 
+                    showPopup('Sent','Message sent to admin'); 
+                    document.getElementById('supportMessage').value = ''; 
+                } catch(e) { showPopup('Error','Failed to send'); }
+            } 
+        }
+
+        // ==================== REAL-TIME LISTENERS ====================
+        function setupRealtimeListeners() {
+            db.ref('depositRequests').on('child_changed', async (snapshot) => {
+                const data = snapshot.val();
+                if (data.status === 'approved' && data.userId === currentUser?.uid) {
+                    gameState.balance = (gameState.balance || 0) + data.totalCoins;
+                    await saveUserData();
+                    updateUI();
+                    addNotification(`✅ Deposit approved! +${formatNumber(data.totalCoins)} coins`, '💰');
+                    showPopup('Deposit Approved!', `${formatNumber(data.totalCoins)} coins added to your account!`);
+                }
+                if (data.status === 'rejected' && data.userId === currentUser?.uid) {
+                    addNotification(`❌ Deposit rejected`, '❌');
+                    showPopup('Deposit Rejected', 'Your deposit request was rejected by admin.');
+                }
+            });
+
+            db.ref('withdrawals').on('child_changed', async (snapshot) => {
+                const data = snapshot.val();
+                if (data.status === 'approved' && data.userId === currentUser?.uid) {
+                    gameState.balance = (gameState.balance || 0) - data.amount;
+                    await saveUserData();
+                    updateUI();
+                    addNotification(`✅ Withdrawal approved! -${formatNumber(data.amount)} coins`, '💸');
+                    showPopup('Withdrawal Approved!', `${formatNumber(data.amount)} coins withdrawn from your account.`);
+                }
+                if (data.status === 'rejected' && data.userId === currentUser?.uid) {
+                    addNotification(`❌ Withdrawal rejected: ${data.reason || 'No reason provided'}`, '❌');
+                    showPopup('Withdrawal Rejected', `Reason: ${data.reason || 'No reason provided'}`);
+                }
+            });
+
+            db.ref('notifications').on('child_added', (snapshot) => {
+                const notif = snapshot.val();
+                if (notif.userId === currentUser?.uid) {
+                    addNotification(notif.message, notif.icon);
+                    db.ref('notifications/' + snapshot.key + '/read').set(true);
+                }
+            });
+
+            db.ref('tickets').on('child_changed', (snapshot) => {
+                const ticket = snapshot.val();
+                if (ticket.userId === currentUser?.uid) {
+                    const replies = ticket.replies || [];
+                    if (replies.length > 0) {
+                        const lastReply = replies[replies.length - 1];
+                        if (lastReply.from === 'admin') {
+                            addNotification(`📩 Admin replied to your support ticket`, '💬');
+                            showPopup('New Support Reply', `Admin replied: "${lastReply.message.substring(0, 50)}..."`);
+                            renderSupportTickets();
+                        }
+                    }
+                }
+            });
+
+            db.ref('users/' + currentUser?.uid).on('value', async (snapshot) => {
+                const data = snapshot.val();
+                if (data && currentUser) {
+                    const newBalance = data.balance;
+                    if (newBalance !== undefined && newBalance !== gameState.balance) {
+                        gameState.balance = newBalance;
+                        updateUI();
+                        addNotification('💰 Balance updated by admin', '💰');
+                    }
+                    if (data.missions) {
+                        missionsState = { ...missionsState, ...data.missions };
+                        updateMissionsUI();
+                    }
+                }
+            });
+        }
+
+        // ==================== REWARDS (Time-based) ====================
+        function canClaimDaily() { 
+            if(!currentUser) return false; 
+            if(!rewardState.lastDailyClaim) return true; 
+            const lastClaim = new Date(rewardState.lastDailyClaim);
+            const today = new Date();
+            const hoursDiff = (today - lastClaim) / (1000 * 60 * 60);
+            return hoursDiff >= 24;
+        }
+
+        function canClaimWeekly() { 
+            if(!currentUser || !rewardState.lastWeeklyClaim) return !rewardState.lastWeeklyClaim; 
+            const diff = Math.floor((new Date() - new Date(rewardState.lastWeeklyClaim)) / (1000 * 60 * 60 * 24)); 
+            return diff >= 7; 
+        }
+
+        function canClaimMonthly() { 
+            if(!currentUser || !rewardState.lastMonthlyClaim) return !rewardState.lastMonthlyClaim; 
+            const last = new Date(rewardState.lastMonthlyClaim);
+            const today = new Date();
+            return (last.getMonth() !== today.getMonth() || last.getFullYear() !== today.getFullYear()); 
+        }
+
+        function getTimeUntilNextDaily() {
+            if (!rewardState.lastDailyClaim) return "Available now!";
+            const lastClaim = new Date(rewardState.lastDailyClaim);
+            const nextClaim = new Date(lastClaim);
+            nextClaim.setHours(nextClaim.getHours() + 24);
+            const now = new Date();
+            if (now >= nextClaim) return "Available now!";
+            const diff = nextClaim - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            return hours + "h " + minutes + "m " + seconds + "s";
+        }
+
+        function startRewardCountdown() { 
+            if(rewardCountdownInterval) clearInterval(rewardCountdownInterval); 
+            rewardCountdownInterval = setInterval(updateRewardUI, 1000); 
+        }
+
+        function updateRewardUI() { 
+            const vip = VIP_CONFIG.levels[gameState.vipLevel]; 
+            document.getElementById('dailyRewardAmount').innerText = vip.dailyReward; 
+            document.getElementById('weeklyRewardAmount').innerText = vip.weeklyReward; 
+            document.getElementById('monthlyRewardAmount').innerText = vip.monthlyReward; 
+            
+            const dailyBtn = document.getElementById('claimDailyBtn'); 
+            if(dailyBtn){ 
+                if(canClaimDaily()){ 
+                    dailyBtn.disabled = false; 
+                    dailyBtn.style.opacity = '1'; 
+                    document.getElementById('dailyCooldown').innerHTML = 'Ready to claim!'; 
+                    document.getElementById('dailyCooldown').style.color = '#2ecc71';
+                } else { 
+                    dailyBtn.disabled = true; 
+                    dailyBtn.style.opacity = '0.5'; 
+                    document.getElementById('dailyCooldown').innerHTML = getTimeUntilNextDaily(); 
+                    document.getElementById('dailyCooldown').style.color = '#e74c3c';
+                } 
+            }
+            
+            const weeklyBtn = document.getElementById('claimWeeklyBtn');
+            if(weeklyBtn){
+                if(canClaimWeekly()){
+                    weeklyBtn.disabled = false;
+                    weeklyBtn.style.opacity = '1';
+                    document.getElementById('weeklyCooldown').innerHTML = 'Ready to claim!';
+                    document.getElementById('weeklyCooldown').style.color = '#2ecc71';
+                } else {
+                    weeklyBtn.disabled = true;
+                    weeklyBtn.style.opacity = '0.5';
+                    document.getElementById('weeklyCooldown').innerHTML = 'Check back next week';
+                    document.getElementById('weeklyCooldown').style.color = '#e74c3c';
+                }
+            }
+            
+            const monthlyBtn = document.getElementById('claimMonthlyBtn');
+            if(monthlyBtn){
+                if(canClaimMonthly()){
+                    monthlyBtn.disabled = false;
+                    monthlyBtn.style.opacity = '1';
+                    document.getElementById('monthlyCooldown').innerHTML = 'Ready to claim!';
+                    document.getElementById('monthlyCooldown').style.color = '#2ecc71';
+                } else {
+                    monthlyBtn.disabled = true;
+                    monthlyBtn.style.opacity = '0.5';
+                    document.getElementById('monthlyCooldown').innerHTML = 'Check back next month';
+                    document.getElementById('monthlyCooldown').style.color = '#e74c3c';
+                }
+            }
+        }
+
+        async function claimDailyReward() { 
+            if(!currentUser) openAuthModal(); 
+            else if(!canClaimDaily()) showPopup('Already Claimed', 'Daily reward already claimed! Come back in 24 hours.'); 
+            else { 
+                const reward = VIP_CONFIG.levels[gameState.vipLevel].dailyReward; 
+                gameState.balance += reward; 
+                rewardState.lastDailyClaim = new Date().toISOString(); 
+                rewardState.dailyStreak = (rewardState.dailyStreak || 0) + 1; 
+                updateUI(); 
+                if(currentUser && !currentUser.isGuest) await saveUserData(); 
+                updateRewardUI(); 
+                addNotification(`You claimed ${reward} coins from Daily Reward!`, '🎁'); 
+                showPopup('Daily Reward Claimed!', `You received ${reward} coins! Streak: ${rewardState.dailyStreak} days`); 
+            } 
+        }
+
+        async function claimWeeklyReward() { 
+            if(!currentUser) openAuthModal(); 
+            else if(!canClaimWeekly()) showPopup('Already Claimed', 'Weekly reward already claimed!'); 
+            else { 
+                const reward = VIP_CONFIG.levels[gameState.vipLevel].weeklyReward; 
+                gameState.balance += reward; 
+                rewardState.lastWeeklyClaim = new Date().toISOString(); 
+                rewardState.weeklyStreak = (rewardState.weeklyStreak || 0) + 1; 
+                updateUI(); 
+                if(currentUser && !currentUser.isGuest) await saveUserData(); 
+                updateRewardUI(); 
+                addNotification(`You claimed ${reward} coins from Weekly Reward!`, '🎁'); 
+                showPopup('Weekly Reward Claimed!', `You received ${reward} coins!`); 
+            } 
+        }
+
+        async function claimMonthlyReward() { 
+            if(!currentUser) openAuthModal(); 
+            else if(!canClaimMonthly()) showPopup('Already Claimed', 'Monthly reward already claimed!'); 
+            else { 
+                const reward = VIP_CONFIG.levels[gameState.vipLevel].monthlyReward; 
+                gameState.balance += reward; 
+                rewardState.lastMonthlyClaim = new Date().toISOString(); 
+                updateUI(); 
+                if(currentUser && !currentUser.isGuest) await saveUserData(); 
+                updateRewardUI(); 
+                addNotification(`You claimed ${reward} coins from Monthly Reward!`, '🎁'); 
+                showPopup('Monthly Reward Claimed!', `You received ${reward} coins!`); 
+            } 
+        }
+
+        // ==================== MISSIONS (HARD - LOWER REWARDS) ====================
+        function updateMissionsUI() { 
+            const missions = [
+                { id: 'casinoMaster', title: '🎰 Casino Master', desc: 'Play ' + missionsState.casinoMaster.target + ' games of Casino Shuffle', reward: 200, icon: '👑', progress: missionsState.casinoMaster.progress, target: missionsState.casinoMaster.target },
+                { id: 'winningStreak', title: '🏆 Winning Streak', desc: 'Win ' + missionsState.winningStreak.target + ' games', reward: 300, icon: '🏆', progress: missionsState.winningStreak.progress, target: missionsState.winningStreak.target },
+                { id: 'goldenHunter', title: '🌟 Golden Hunter', desc: 'Find ' + missionsState.goldenHunter.target + ' Golden Cards', reward: 400, icon: '🌟', progress: missionsState.goldenHunter.progress, target: missionsState.goldenHunter.target },
+                { id: 'coinCollector', title: '💰 Coin Collector', desc: 'Win ' + formatNumber(missionsState.coinCollector.target) + ' coins total', reward: 500, icon: '💰', progress: missionsState.coinCollector.progress, target: missionsState.coinCollector.target }
+            ]; 
+            
+            document.getElementById('missionsContent').innerHTML = missions.map(m => { 
+                const data = missionsState[m.id]; 
+                const isCompleted = data?.completed; 
+                const isClaimed = data?.claimed; 
+                const progress = data?.progress || 0;
+                const target = data?.target || m.target;
+                const pct = Math.min(100, (progress / target) * 100);
+                
+                let statusText = '';
+                let statusClass = 'in-progress';
+                let btnHtml = '';
+                
+                if (isClaimed) {
+                    statusText = '✅ Claimed';
+                    statusClass = 'claimed';
+                    btnHtml = '<button class="mission-btn claimed" disabled>✅ Claimed</button>';
+                } else if (isCompleted) {
+                    statusText = '🎉 Complete!';
+                    statusClass = 'completed';
+                    btnHtml = `<button class="mission-btn available" onclick="window.claimMissionReward('${m.id}', ${m.reward})">🎁 Claim ${m.reward} Coins</button>`;
+                } else {
+                    statusText = `${Math.floor(pct)}%`;
+                    statusClass = 'in-progress';
+                    btnHtml = '<button class="mission-btn locked" disabled>🔒 In Progress</button>';
+                }
+                
+                return `<div class="mission-card" style="border-left: 3px solid ${isCompleted ? '#2ecc71' : '#d4af37'};">
+                    <div class="mission-header">
+                        <span class="mission-icon">${m.icon}</span>
+                        <span class="mission-title">${m.title}</span>
+                        <span class="mission-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="mission-desc">${m.desc}</div>
+                    <div class="mission-progress-bar">
+                        <div class="mission-progress-fill" style="width:${pct}%;"></div>
+                    </div>
+                    <div class="mission-progress-text">
+                        <span>${formatNumber(progress)} / ${formatNumber(target)}</span>
+                        <span>${Math.floor(pct)}%</span>
+                    </div>
+                    <div class="mission-reward">🎁 Reward: ${m.reward} Coins</div>
+                    ${btnHtml}
+                </div>`; 
+            }).join(''); 
+        }
+
+        async function claimMissionReward(missionId, reward) { 
+            if(!currentUser) openAuthModal(); 
+            else if(!missionsState[missionId]?.completed) showPopup('Not Completed', 'Complete the mission first!'); 
+            else if(missionsState[missionId]?.claimed) showPopup('Already Claimed', 'Reward already claimed'); 
+            else { 
+                gameState.balance += reward; 
+                missionsState[missionId].claimed = true; 
+                updateUI(); 
+                if(currentUser && !currentUser.isGuest) await saveUserData(); 
+                updateMissionsUI(); 
+                addNotification(`🎯 Claimed ${reward} coins from ${missionId}!`, '🎯'); 
+                showPopup('Mission Reward!', `You earned ${reward} coins!`); 
+            } 
+        }
+
+        function checkAndUpdateMissions() { 
+            let updated = false; 
+            
+            if(!missionsState.casinoMaster.completed && gameState.totalBets >= missionsState.casinoMaster.target){ 
+                missionsState.casinoMaster.completed = true; 
+                updated = true; 
+            } else if(!missionsState.casinoMaster.completed) { 
+                missionsState.casinoMaster.progress = gameState.totalBets; 
+            }
+            
+            if(!missionsState.winningStreak.completed && gameState.totalWins >= missionsState.winningStreak.target){ 
+                missionsState.winningStreak.completed = true; 
+                updated = true; 
+            } else if(!missionsState.winningStreak.completed) { 
+                missionsState.winningStreak.progress = gameState.totalWins; 
+            }
+            
+            if(!missionsState.goldenHunter.completed && gameState.goldenHits >= missionsState.goldenHunter.target){ 
+                missionsState.goldenHunter.completed = true; 
+                updated = true; 
+            } else if(!missionsState.goldenHunter.completed) { 
+                missionsState.goldenHunter.progress = gameState.goldenHits; 
+            }
+            
+            if(!missionsState.coinCollector.completed && gameState.totalSpent >= missionsState.coinCollector.target){ 
+                missionsState.coinCollector.completed = true; 
+                updated = true; 
+            } else if(!missionsState.coinCollector.completed) { 
+                missionsState.coinCollector.progress = gameState.totalSpent; 
+            }
+            
+            if(updated){ 
+                updateMissionsUI(); 
+                if(currentUser && !currentUser.isGuest) saveUserData(); 
+                showPopup('Mission Update!', 'A mission has been completed! Check Missions tab to claim your reward!'); 
+                addNotification('🎯 A mission was completed!', '🎯');
+            } 
+        }
+
+        function updateVIPLevel() { 
+            let newLevel = 0; 
+            if(gameState.totalSpent >= 640000) newLevel = 5; 
+            else if(gameState.totalSpent >= 320000) newLevel = 4; 
+            else if(gameState.totalSpent >= 160000) newLevel = 3; 
+            else if(gameState.totalSpent >= 80000) newLevel = 2; 
+            else if(gameState.totalSpent >= 40000) newLevel = 1; 
+            if(newLevel > gameState.vipLevel){ 
+                gameState.vipLevel = newLevel; 
+                addNotification(`VIP Level ${newLevel} reached!`, '👑'); 
+                showPopup('VIP Level Up!', `You reached VIP ${newLevel}!`); 
+            } 
+        }
 
         // ==================== REFERRAL UI ====================
-        function loadReferralData() { if(!currentUser) return; document.getElementById('referralCodeDisplay').innerText = referralData.code || 'SHUFFLE786'; document.getElementById('referralLinkInput').value = referralData.link || window.location.origin + window.location.pathname + '?ref=' + (referralData.code || 'SHUFFLE786'); document.getElementById('totalReferrals').innerText = referralData.totalReferrals; document.getElementById('totalEarnings').innerText = formatNumber(referralData.totalEarnings); document.getElementById('activeReferrals').innerText = referralData.activeReferrals; const body = document.getElementById('referralsBody'); if(referralData.referrals.length===0) body.innerHTML = '<tr><td colspan="5">No referrals yet</td></tr>'; else body.innerHTML = referralData.referrals.map(r => `<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
+        function loadReferralData() { 
+            if(!currentUser) return; 
+            document.getElementById('referralCodeDisplay').innerText = referralData.code || 'SHUFFLE786'; 
+            document.getElementById('referralLinkInput').value = referralData.link || window.location.origin + window.location.pathname + '?ref=' + (referralData.code || 'SHUFFLE786'); 
+            document.getElementById('totalReferrals').innerText = referralData.totalReferrals; 
+            document.getElementById('totalEarnings').innerText = formatNumber(referralData.totalEarnings); 
+            document.getElementById('activeReferrals').innerText = referralData.activeReferrals; 
+            const body = document.getElementById('referralsBody'); 
+            if(referralData.referrals.length === 0) body.innerHTML = '<tr><td colspan="5">No referrals yet</td></tr>'; 
+            else body.innerHTML = referralData.referrals.map(r => `<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); 
+        }
+
         function copyReferralCode() { navigator.clipboard.writeText(referralData.code || 'SHUFFLE786'); showPopup('Copied!','Referral code copied'); }
         function copyReferralLink() { navigator.clipboard.writeText(referralData.link || window.location.origin + window.location.pathname + '?ref=' + (referralData.code || 'SHUFFLE786')); showPopup('Copied!','Referral link copied'); }
-        function filterReferrals(filter) { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); if(event?.target) event.target.classList.add('active'); let filtered = referralData.referrals; if(filter==='active') filtered = referralData.referrals.filter(r=>r.status==='active'); else if(filter==='pending') filtered = referralData.referrals.filter(r=>r.status!=='active'); document.getElementById('referralsBody').innerHTML = filtered.length===0 ? '<tr><td colspan="5">No referrals found</td></tr>' : filtered.map(r=>`<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); }
+        function filterReferrals(filter) { 
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
+            if(event?.target) event.target.classList.add('active'); 
+            let filtered = referralData.referrals; 
+            if(filter === 'active') filtered = referralData.referrals.filter(r => r.status === 'active'); 
+            else if(filter === 'pending') filtered = referralData.referrals.filter(r => r.status !== 'active'); 
+            document.getElementById('referralsBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="5">No referrals found</td></tr>' : filtered.map(r => `<tr><td>${escapeHtml(r.username)}</td><td><span class="status-badge ${r.status==='active'?'approved':'pending'}">${r.status==='active'?'Active':'Pending'}</span></td><td class="amount-positive">${formatNumber(r.deposit)}</td><td class="amount-positive">${formatNumber(r.commission)}</td><td>${r.date}</td></tr>`).join(''); 
+        }
 
         // ==================== NAVIGATION ====================
         function openReferral() { document.getElementById('referralSection').classList.add('active'); loadReferralData(); }
@@ -2261,10 +2795,6 @@
         function closeSupport() { document.getElementById('additionalSupportSection').classList.remove('active'); openOffers(); }
         function openAdditionalSupport() { document.getElementById('additionalSupportSection').classList.add('active'); }
         function closeAdditionalSupport() { document.getElementById('additionalSupportSection').classList.remove('active'); }
-        async function sendSupportMessage() { const msg=document.getElementById('supportMessage').value.trim(); if(!msg) showPopup('Error','Enter message'); else if(!currentUser) showPopup('Error','Please login'); else { 
-            const ticketData = { userId: currentUser.uid, username: currentUser.username, message: msg, timestamp: new Date().toISOString(), status: 'pending' };
-            try { await db.ref('tickets').push().set(ticketData); addNotification('Support message sent','📧'); showPopup('Sent','Message sent to admin'); document.getElementById('supportMessage').value=''; closeAdditionalSupport(); } catch(e) { showPopup('Error','Failed to send'); }
-        } }
         function openVIPPopup() { const content=document.getElementById('vipPopupContent'); content.innerHTML=VIP_CONFIG.levels.map(v=>`<div><strong>VIP ${v.level}</strong> - Daily:${v.dailyReward} Weekly:${v.weeklyReward} Monthly:${v.monthlyReward}<br><small>Requires ${formatNumber(v.requiredSpend)} spent</small></div>`).join(''); document.getElementById('vipPopup').classList.add('active'); }
         function closeVIPPopup() { document.getElementById('vipPopup').classList.remove('active'); }
         function openDailyRewards() { document.getElementById('dailyRewardsSection').classList.add('active'); updateRewardUI(); closeOffers(); }
@@ -2276,10 +2806,78 @@
         function setActiveNav(el) { document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); }
         function showDownloadPopup() { document.getElementById('downloadPopup').classList.add('active'); }
         function closeDownloadPopup() { document.getElementById('downloadPopup').classList.remove('active'); }
-        function downloadApk() { showPopup('Coming Soon','APK available soon'); }
+        function downloadApk() { 
+            // Direct to MediaFire APK link
+            window.open('https://www.mediafire.com/file/kcb81coao35jp6f/flappy+cheakpoit+786.apk/file', '_blank');
+            showPopup('Download Started', 'APK download from MediaFire will begin shortly.');
+        }
         function deleteAllNotifications() { notifications=[]; renderNotifications(); showPopup('Deleted','All notifications cleared'); }
         function openNotificationPanel() { document.getElementById('notificationPanel').classList.add('open'); renderNotifications(); }
         function closeNotificationPanel() { document.getElementById('notificationPanel').classList.remove('open'); }
+
+        // ==================== FLOATING NOTIFICATION ROTATOR (CLICKABLE) ====================
+        const gameEntries = [
+            { name: 'P999', link: 'https://222p999.com/?dl=ekvj2m' },
+            { name: 'DONE 999', link: 'http://www.done999app.org/?r=edw9518' },
+            { name: 'CASINO SHUFFLE 786', link: 'https://casino-suffle-786.onrender.com/?ref=YAS1103' },
+            { name: 'JJWIN', link: 'https://140.150.33.235:5001/?dl=c5iphx' },
+            { name: 'DK11', link: 'http://www.dk11com.net/?r=bys1530' },
+            { name: 'Y888', link: 'https://www.00y888.com/?dl=bx4vqs' },
+            { name: 'BET QQ', link: 'https://betqq3.com/?dl=4qehan' },
+            { name: 'DK222', link: 'http://www.dk222app.net/?r=mby0226' }
+        ];
+        let currentNotifIndex = 0;
+        let notifInterval = null;
+
+        function showFloatingNotification(entry) {
+            // Remove any existing notification
+            const existing = document.querySelector('.floating-notification');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = 'floating-notification';
+            div.innerHTML = `
+                <div class="notif-title">🎮 New Game Available!</div>
+                <div class="notif-body"><strong>${entry.name}</strong> — Try it now!</div>
+                <div style="font-size:0.6rem;color:#888;margin-top:6px;">Click to play ▶</div>
+            `;
+            // Click handler to open the link
+            div.addEventListener('click', function(e) {
+                e.stopPropagation();
+                window.open(entry.link, '_blank');
+                // Optionally, remove the notification after click
+                if (div.parentNode) {
+                    div.style.opacity = '0';
+                    setTimeout(() => {
+                        if (div.parentNode) div.remove();
+                    }, 300);
+                }
+            });
+            document.body.appendChild(div);
+
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (div.parentNode) {
+                    div.style.opacity = '0';
+                    setTimeout(() => {
+                        if (div.parentNode) div.remove();
+                    }, 300);
+                }
+            }, 10000);
+        }
+
+        function startNotificationRotator() {
+            if (notifInterval) clearInterval(notifInterval);
+            // Show first notification immediately
+            showFloatingNotification(gameEntries[currentNotifIndex]);
+            currentNotifIndex = (currentNotifIndex + 1) % gameEntries.length;
+
+            // Then show every 20 seconds (10s display + 10s wait)
+            notifInterval = setInterval(() => {
+                showFloatingNotification(gameEntries[currentNotifIndex]);
+                currentNotifIndex = (currentNotifIndex + 1) % gameEntries.length;
+            }, 20000);
+        }
 
         // ==================== ORIGINAL CASINO SHUFFLE GAME ====================
         function enterGame() { if(!currentUser) { openAuthModal(); return; } if(gameState.balance < 10) { showPopup('Insufficient Balance', 'You need at least 10 coins to play! Purchase coins from shop.'); return; } resetGame(); document.getElementById('gameView').classList.add('active'); }
@@ -2290,7 +2888,7 @@
         function renderCards(){ const grid=document.getElementById('cardGrid'); grid.innerHTML=''; gameState.cards.forEach((c,i)=>{ const cardDiv=document.createElement('div'); cardDiv.className='card'; cardDiv.setAttribute('data-index',i); cardDiv.setAttribute('data-type',c.type); cardDiv.setAttribute('data-value',c.value||''); cardDiv.setAttribute('data-id',c.id); const back=document.createElement('div'); back.className='card-face card-back'; back.innerHTML='<div class="card-back-pattern"></div><span class="card-back-logo">♛</span>'; const front=document.createElement('div'); front.className='card-face card-front'; if(c.type==='bomb'){ front.classList.add('bomb'); front.innerHTML='<div class="bomb-content"><span class="bomb-icon">💣</span><span class="bomb-text">BOOM!</span></div>'; }else if(c.type==='golden'){ front.classList.add('golden'); front.innerHTML='<div class="golden-content"><span class="golden-icon">👑</span><span class="golden-text">20X WIN!</span></div>'; }else{ front.classList.add(c.suit.color); front.innerHTML=`<div class="card-corner card-corner-tl"><span class="card-rank">${c.value}</span><span class="card-suit-small">${c.suit.symbol}</span></div><span class="card-center">${c.suit.symbol}</span><div class="card-corner card-corner-br"><span class="card-rank">${c.value}</span><span class="card-suit-small">${c.suit.symbol}</span></div>`; } cardDiv.appendChild(back); cardDiv.appendChild(front); cardDiv.onclick=()=>handleCardClick(cardDiv); grid.appendChild(cardDiv); }); }
         async function startGame(){ if(!currentUser) openAuthModal(); else if(gameState.currentBet<=0) showPopup('No Bet','Select bet'); else if(gameState.currentBet>gameState.balance) showPopup('Insufficient','Not enough coins! Purchase coins from shop.'); else{ gameState.balance-=gameState.currentBet; gameState.totalSpent+=gameState.currentBet; gameState.firstWagerProgress+=gameState.currentBet; gameState.totalBets++; checkAndUpdateMissions(); updateVIPLevel(); if(gameState.firstWagerProgress>=10000 && !gameState.hasCompletedFirstWager){ gameState.hasCompletedFirstWager=true; addNotification('Withdrawal requirement completed!','🎉'); } if(currentUser && !currentUser.isGuest) await saveUserData(); updateUI(); gameState.currentWin=0; gameState.multiplier=1; gameState.pairsMatched=0; gameState.isPlaying=true; gameState.canFlip=true; gameState.firstCard=null; gameState.secondCard=null; gameState.cards=generateCards(); renderCards(); document.getElementById('betPanel').style.display='none'; document.getElementById('startBtn').classList.add('hidden'); document.getElementById('cashoutBtn').classList.add('hidden'); document.getElementById('continueBtn').classList.add('hidden'); } }
         function handleCardClick(card){ if(!gameState.canFlip) return; if(card.classList.contains('flipped')||card.classList.contains('matched')) return; const type=card.getAttribute('data-type'); card.classList.add('flipped'); if(type==='bomb'){ gameState.isPlaying=false; gameState.canFlip=false; if(currentUser && !currentUser.isGuest) saveUserData(); document.getElementById('loseOverlay').classList.add('active'); addNotification('Bomb! Game over','💣'); return; } if(type==='golden'){ if(!gameState.firstCard) gameState.firstCard=card; else if(!gameState.secondCard && gameState.firstCard!==card){ gameState.secondCard=card; gameState.canFlip=false; setTimeout(checkGoldenMatch,500); } return; } if(!gameState.firstCard) gameState.firstCard=card; else if(!gameState.secondCard && gameState.firstCard!==card){ gameState.secondCard=card; gameState.canFlip=false; setTimeout(checkMatch,500); } }
-        function checkGoldenMatch(){ const c1=gameState.firstCard, c2=gameState.secondCard; if(c1.getAttribute('data-type')==='golden' && c2.getAttribute('data-type')==='golden'){ c1.classList.add('matched'); c2.classList.add('matched'); gameState.currentWin=gameState.currentBet*CONFIG.GOLDEN_MULTIPLIER; gameState.multiplier=CONFIG.GOLDEN_MULTIPLIER; gameState.balance+=gameState.currentWin; gameState.totalWins++; updateUI(); if(currentUser && !currentUser.isGuest) saveUserData(); checkAndUpdateMissions(); document.getElementById('winAmountDisplay').innerText=formatNumber(gameState.currentWin); document.getElementById('winOverlay').classList.add('active'); gameState.isPlaying=false; addNotification(`Golden cards! Won ${formatNumber(gameState.currentWin)}!`,'👑'); }else{ setTimeout(()=>{ if(c1) c1.classList.remove('flipped'); if(c2) c2.classList.remove('flipped'); gameState.canFlip=true; },500); } gameState.firstCard=null; gameState.secondCard=null; }
+        function checkGoldenMatch(){ const c1=gameState.firstCard, c2=gameState.secondCard; if(c1.getAttribute('data-type')==='golden' && c2.getAttribute('data-type')==='golden'){ c1.classList.add('matched'); c2.classList.add('matched'); gameState.currentWin=gameState.currentBet*CONFIG.GOLDEN_MULTIPLIER; gameState.multiplier=CONFIG.GOLDEN_MULTIPLIER; gameState.balance+=gameState.currentWin; gameState.totalWins++; gameState.goldenHits++; updateUI(); if(currentUser && !currentUser.isGuest) saveUserData(); checkAndUpdateMissions(); document.getElementById('winAmountDisplay').innerText=formatNumber(gameState.currentWin); document.getElementById('winOverlay').classList.add('active'); gameState.isPlaying=false; addNotification(`Golden cards! Won ${formatNumber(gameState.currentWin)}!`,'👑'); }else{ setTimeout(()=>{ if(c1) c1.classList.remove('flipped'); if(c2) c2.classList.remove('flipped'); gameState.canFlip=true; },500); } gameState.firstCard=null; gameState.secondCard=null; }
         function checkMatch(){ const c1=gameState.firstCard, c2=gameState.secondCard; const match=c1.getAttribute('data-value')===c2.getAttribute('data-value') && c1.getAttribute('data-id')!==c2.getAttribute('data-id'); if(match){ c1.classList.add('matched'); c2.classList.add('matched'); gameState.pairsMatched++; gameState.matchedPairs++; gameState.multiplier=CONFIG.MULTIPLIERS[gameState.pairsMatched-1]||gameState.multiplier; gameState.currentWin=Math.floor(gameState.currentBet*gameState.multiplier); updateUI(); if(gameState.pairsMatched>=CONFIG.PAIRS_COUNT){ gameState.balance+=gameState.currentWin; gameState.totalWins++; updateUI(); if(currentUser && !currentUser.isGuest) saveUserData(); checkAndUpdateMissions(); document.getElementById('winAmountDisplay').innerText=formatNumber(gameState.currentWin); document.getElementById('winOverlay').classList.add('active'); gameState.isPlaying=false; addNotification(`You won ${formatNumber(gameState.currentWin)}!`,'🎉'); }else{ gameState.canFlip=true; document.getElementById('cashoutBtn').classList.remove('hidden'); document.getElementById('continueBtn').classList.remove('hidden'); } }else{ setTimeout(()=>{ if(c1) c1.classList.remove('flipped'); if(c2) c2.classList.remove('flipped'); gameState.canFlip=true; },500); } gameState.firstCard=null; gameState.secondCard=null; }
         function cashout(){ if(gameState.currentWin>0){ gameState.balance+=gameState.currentWin; gameState.totalWins++; updateUI(); if(currentUser && !currentUser.isGuest) saveUserData(); checkAndUpdateMissions(); document.getElementById('winAmountDisplay').innerText=formatNumber(gameState.currentWin); document.getElementById('winOverlay').classList.add('active'); gameState.isPlaying=false; addNotification(`Cashed out ${formatNumber(gameState.currentWin)}!`,'💰'); } }
         function continuePlaying(){ gameState.canFlip=true; document.getElementById('cashoutBtn').classList.add('hidden'); document.getElementById('continueBtn').classList.add('hidden'); }
@@ -2307,6 +2905,7 @@
         let flappyAwaitingCheckpoint = false;
         let flappyCountdownInterval = null;
         let flappyTotalPipesSpawned = 0;
+        let flappyGamesPlayed = 0;
 
         const FLAPPY_VIRTUAL_WIDTH = 400;
         const FLAPPY_VIRTUAL_HEIGHT = 600;
@@ -2459,6 +3058,7 @@
             gameState.totalWins++;
             gameState.totalSpent += flappySelectedBet;
             gameState.firstWagerProgress += flappySelectedBet;
+            flappyGamesPlayed++;
             checkAndUpdateMissions();
             updateVIPLevel();
             updateUI();
@@ -2716,6 +3316,7 @@
             }
             gameState.balance -= betAmount;
             flappySelectedBet = betAmount;
+            flappyGamesPlayed++;
             updateUI();
             if (currentUser && !currentUser.isGuest) saveUserData();
             resetFlappyRound();
@@ -2852,6 +3453,8 @@
             setTimeout(() => {
                 splash.style.display = 'none';
                 document.getElementById('appContainer').classList.add('visible');
+                // Start notification rotator after splash
+                startNotificationRotator();
             }, 500);
         }
 
@@ -2956,6 +3559,8 @@
                 startRewardCountdown();
                 resetGame();
                 addNotification('Welcome back!', '🎉');
+                loadSupportTickets();
+                setupRealtimeListeners();
             }
         });
         setTimeout(hideSplash, 1500);
